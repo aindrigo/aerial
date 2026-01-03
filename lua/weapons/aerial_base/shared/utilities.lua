@@ -35,8 +35,8 @@ function SWEP:GetOwnerSpeed(min, max)
     local ply = self:GetOwner()
 
     min = min or 0
-    max = max or 0
+    max = max or 1
 
     local vel = ply:GetVelocity()
-    return math.Clamp(math.sqrt(vel:Length2DSqr()) / ply:GetRunSpeed(), min, max)
+    return math.Clamp(vel:Length2D() / ply:GetRunSpeed(), min, max)
 end

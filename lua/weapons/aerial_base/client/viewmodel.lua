@@ -27,7 +27,6 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     matrix:Translate(eyePos)
     matrix:Rotate(eyeAng)
 
-    local ply = self:GetOwner()
     local speed = self:GetOwnerSpeed()
 
     -- Bob, sway, etc
@@ -37,24 +36,26 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
 end
 
 function SWEP:VMViewBob(ct, ft, speed, matrix)
+    local bobFrequency = 5
+    local bobAmplitude = speed
+
     local calculatedPosition = Vector(
         0,
-        sin(ct * 5) * 0.2 * speed,
-        cos(ct * 2.5) * 0.4 * speed
+        sin(ct * bobFrequency) * 0.5 * bobAmplitude,
+        cos(ct * 2 * bobFrequency) * 0.25 * bobAmplitude
     )
 
     local calculatedAngles = Angle(0, 0, 0)
 
-
     -- Lerp & move
     self._vmBobPosition = LerpVector(
-        ft * 12,
+        ft * 7,
         self._vmBobPosition or calculatedPosition,
         calculatedPosition
     )
     
     self._vmBobAngles = LerpAngle(
-        ft * 12,
+        ft * 7,
         self._vmBobAngles or calculatedAngles,
         calculatedAngles
     )

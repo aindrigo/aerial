@@ -63,18 +63,22 @@ function SWEP:Attack(data)
     attackData.Attacker = ply
     attackData.Delay = delay
     attackData.Recoil = self:AttackCalculateRecoil(data, attackData)
+    attackData.Traces = {}
 
-    local traceResult = self:AttackTrace(data, attackData)
-    attackData.TraceResult = traceResult
+    for i = 1, (data.ShotCount or 1) do
+        local traceResult = self:AttackTrace(data, attackData, i)
 
-    if traceResult.Hit and IsValid(traceResult.Entity) then
-        self:AttackHitEntity(data, attackData)
+        if traceResult.Hit and IsValid(traceResult.Entity) then
+            self:AttackHitEntity(data, attackData, traceResult)
+        end
+
+        table.insert(attackData.Traces, traceResult)
     end
 
-    self:AttackEffects(data, traceResult)
+    self:AttackEffects(data, attackData)
 end
 
-function SWEP:AttackHitEntity(data, attackData)
+function SWEP:AttackHitEntity(data, attackData, traceResult)
     if self:FireHook("AttackHitEntity", data, attackData) then return end
 
     local dmgInfo = DamageInfo()
@@ -85,36 +89,42 @@ function SWEP:AttackHitEntity(data, attackData)
 
     dmgInfo:SetDamageType(data.DamageType or DMG_BULLET)
     dmgInfo:SetDamagePosition(traceResult.HitPos)
-    dmgInfo:SetDamageForce(attackData.TraceResult.Normal * (data.Force or 1))
+    dmgInfo:SetDamageForce(traceResult.Normal * (data.Force or 1))
 
-    traceResult.Entity:DispatchTraceAttack(dmgInfo, attackData.TraceResult)
+    traceResult.Entity:DispatchTraceAttack(dmgInfo, traceResult)
 end
 
 function SWEP:AttackCalculateRecoil(data, attackData)
+    local hookResult = self:FireHook("AttackCalculateRecoil", data, ply)
+    if isvector(hookResult) then
+        return hookResult
+    end
+
     local ply = attackData.Attacker
     local recoilData = data.Recoil or {}
 
     local min = recoilData.Min or 0
     local max = recoilData.Max or 1
 
-    local x = util.SharedRandom("LSRX"..ply:SteamID(), recoilData.MinX or min, recoilData.MaxX or max)
-    local z = util.SharedRandom("LSRZ"..ply:SteamID(), recoilData.MinZ or min, recoilData.MaxZ or max)
+    local x = util.SharedRandom("ARRX"..ply:SteamID(), recoilData.MinX or min, recoilData.MaxX or max)
+    local z = util.SharedRandom("ARRZ"..ply:SteamID(), recoilData.MinZ or min, recoilData.MaxZ or max)
 
     return Vector(x, 0, z)
 end
 
-function SWEP:AttackCalculateSpread(data, attackData)
+function SWEP:AttackCalculateSpread(data, attackData, index)
+    local hookResult = self:FireHook("AttackCalculateSpread", data, attackData, index)
+    if isvector(hookResult) then
+        return hookResult
+    end
+
     local ply = attackData.Attacker
     local spreadData = data.Spread or {}
 
-    local spread = spreadData.Cone
-
-    if isnumber(spreadData.RecoilMod) then
-        spread = spread * spreadData.RecoilMod
-    end
+    local cone = Vector(spreadData.Cone, 0, spreadData.Cone)
+    cone = cone * attackData.Recoil * (spreadData.RecoilMod or 1)
 
     local mod = 1
-
     if isnumber(spreadData.IronsightsMod) and self:GetIronsights() then
         mod = mod * spreadData.IronsightsMod
     end
@@ -128,39 +138,45 @@ function SWEP:AttackCalculateSpread(data, attackData)
     end
 
     if isnumber(spreadData.VelocityMod) then
-        mod = mod * self:GetOwnerSpeed() * spreadData.VelocityMod
+        mod = mod + (self:GetOwnerSpeed() * spreadData.VelocityMod)
     end
 
-    spread = spread * mod
+    cone:Mul(mod)
+    cone = cone / 2
 
     local min = spreadData.Min or -math.huge
     local max = spreadData.Max or math.huge
 
     return Vector(
-        math.Clamp(spread.x, spreadData.MinX or min, spreadData.MaxX or max),
+        math.Clamp(util.SharedRandom("ARSX"..tostring(index)..ply:SteamID(), -cone.x, cone.x), spreadData.MinX or min, spreadData.MaxX or max),
         0,
-        math.Clamp(spread.z, spreadData.MinZ or min, spreadData.MaxZ or max)
+        math.Clamp(util.SharedRandom("ARSZ"..tostring(index)..ply:SteamID(), -cone.z, cone.z), spreadData.MinZ or min, spreadData.MaxZ or max)
     )
 end
 
-function SWEP:AttackTrace(data, attackData)
+function SWEP:AttackTrace(data, attackData, index)
     local ply = attackData.Attacker
-    local hookResult = self:FireHook("AttackTrace", data, ply)
+    local hookResult = self:FireHook("AttackTrace", data, attackData, index)
     if istable(hookResult) then
         return hookResult
     end
 
-    local spread = self:AttackCalculateSpread(data, attackData)
+    local spread = self:AttackCalculateSpread(data, attackData, index)
 
-    print(spread)
-    local dir = ply:GetAimVector()
-    dir:Add(spread)
-    dir:Normalize()
+    local direction = ply:GetAimVector()
+    local angle = direction:Angle()
+
+    angle:RotateAroundAxis(angle:Right(), spread.x)
+    angle:RotateAroundAxis(angle:Up(), spread.z)
+    
+    direction = angle:Forward()
+
+    local startPosition = ply:GetShootPos()
+    local endPosition = startPosition + direction * (data.Distance or 8192)
 
     local traceData = {}
-    traceData.start = ply:GetShootPos()
-    traceData.endpos = traceData.start + dir * (data.Distance or 5000)
-
+    traceData.start = startPosition
+    traceData.endpos = endPosition
     traceData.filter = { self, ply }
 
     ply:LagCompensation(true)
