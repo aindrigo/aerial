@@ -17,7 +17,37 @@
 ]]--
 
 function SWEP:Think()
+    self:ThinkAttacks()
     self:ThinkIdle()
+    self:ThinkReload()
+end
+
+function SWEP:ThinkAttacks()
+    local ply = self:GetOwner()
+
+    self:ThinkAttack("Primary", IN_ATTACK)
+    self:ThinkAttack("Secondary", IN_ATTACK2)
+end
+
+function SWEP:ThinkAttack(id, key)
+    if not self:CanAttack(id) then return end
+
+    local ply = self:GetOwner()
+    local data = self:GetAttackTable(id)
+
+    if data.Ammo == "none" then return end
+
+    local magazineCount = self:GetAttackMagazineCount(id)
+
+    if magazineCount > 0 and data.Automatic then
+        if ply:KeyDown(key) then
+            self:Attack(id)
+        end
+    else
+        if ply:KeyPressed(key) then
+            self:Attack(id)
+        end
+    end
 end
 
 function SWEP:ThinkIdle()
@@ -28,5 +58,20 @@ function SWEP:ThinkIdle()
     if ct > idleTime then
         self:SetIdleTime(0)
         self:PlayAnimation(self.IdleAnimation or ACT_VM_IDLE)
+    end
+end
+
+function SWEP:ThinkReload()
+    local reloadTime = self:GetReloadTime()
+    if reloadTime <= 0 then return end
+
+    local id = self:GetReloadName()
+    local ct = CurTime()
+
+    if ct >= reloadTime and id ~= "" then
+        self:ReloadAttackFinish(id)
+
+        self:SetReloadTime(0)
+        self:SetReloadName("")
     end
 end

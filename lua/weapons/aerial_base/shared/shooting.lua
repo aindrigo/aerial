@@ -16,73 +16,83 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:GetNextAttack(data)
-    local func = self["GetNext" .. data.ID .. "Fire"]
+function SWEP:GetNextAttack(id)
+    local func = self["GetNext"..id.."Fire"]
     return func(self)
 end
 
-function SWEP:SetNextAttack(data, value)
-    local func = self["SetNext" .. data.ID .. "Fire"]
+function SWEP:SetNextAttack(id, value)
+    local func = self["SetNext"..id.."Fire"]
     return func(self, value)
 end
 
 function SWEP:PrimaryAttack()
-    if self.Primary.Ammo == "none" then
-        return
-    end
-
-    self:Attack(self.Primary)
 end
 
 function SWEP:SecondaryAttack()
-    if self.Secondary.Ammo == "none" then
-        return
-    end
-
-    self:Attack(self.Secondary)
 end
 
-function SWEP:CanAttack(data)
-    if self:FireHook("CanAttack", data) == false then return false end
+function SWEP:CanAttack(id)
+    if self:FireHook("CanAttack", id) == false then return false end
 
     local ct = CurTime()
 
-    local nextFire = self:GetNextAttack(data)
+    local nextFire = self:GetNextAttack(id)
     return ct > nextFire and ct > self:GetReloadTime()
 end
 
-function SWEP:Attack(data)
-    if not self:CanAttack(data) then return end
-    if self:FireHook("Attack", data) then return end
+function SWEP:Attack(id)
+    if not self:CanAttack(id) or self:FireHook("Attack", id) then return end
 
+    local data = self:GetAttackTable(id)
     local ply = self:GetOwner()
+
+    local magazineCount = self:GetAttackMagazineCount(id)
     local delay = data.Delay or 0.1
-    self:SetNextAttack(data, CurTime() + delay)
+
+    self:SetNextAttack(id, CurTime() + delay)
+
+    if magazineCount < 1 then
+        if data.EmptyAnimation then
+            self:PlayAnimation(data.EmptyAnimation)
+            self:QueueIdle()
+        end
+
+        if data.EmptySound then
+            self:EmitSound(data.EmptySound, SNDLVL_NORM)
+        end
+
+        return
+    end
+    
+    self:SetAttackMagazineCount(id, magazineCount - 1)
 
     local attackData = {}
     attackData.Attacker = ply
     attackData.Delay = delay
-    attackData.Recoil = self:AttackCalculateRecoil(data, attackData)
+    attackData.Damage = data.Damage
+    attackData.Recoil = self:AttackCalculateRecoil(id, attackData)
     attackData.Traces = {}
 
     for i = 1, (data.ShotCount or 1) do
-        local traceResult = self:AttackTrace(data, attackData, i)
+        local traceResult = self:AttackTrace(id, attackData, i)
 
         if traceResult.Hit and IsValid(traceResult.Entity) then
-            self:AttackHitEntity(data, attackData, traceResult)
+            self:AttackHitEntity(id, attackData, traceResult)
         end
 
         table.insert(attackData.Traces, traceResult)
     end
 
-    self:AttackEffects(data, attackData)
+    self:AttackEffects(id, attackData)
 end
 
-function SWEP:AttackHitEntity(data, attackData, traceResult)
-    if self:FireHook("AttackHitEntity", data, attackData) then return end
+function SWEP:AttackHitEntity(id, attackData, traceResult)
+    if self:FireHook("AttackHitEntity", id, attackData) then return end
 
+    local data = self:GetAttackTable(id)
     local dmgInfo = DamageInfo()
-    dmgInfo:SetDamage(data.Damage)
+    dmgInfo:SetDamage(attackData.Damage)
     dmgInfo:SetAttacker(attackData.Attacker)
     dmgInfo:SetInflictor(self)
     dmgInfo:SetWeapon(self)
@@ -94,11 +104,13 @@ function SWEP:AttackHitEntity(data, attackData, traceResult)
     traceResult.Entity:DispatchTraceAttack(dmgInfo, traceResult)
 end
 
-function SWEP:AttackCalculateRecoil(data, attackData)
-    local hookResult = self:FireHook("AttackCalculateRecoil", data, ply)
+function SWEP:AttackCalculateRecoil(id, attackData)
+    local hookResult = self:FireHook("AttackCalculateRecoil", id, ply)
     if isvector(hookResult) then
         return hookResult
     end
+
+    local data = self:GetAttackTable(id)
 
     local ply = attackData.Attacker
     local recoilData = data.Recoil or {}
@@ -112,11 +124,13 @@ function SWEP:AttackCalculateRecoil(data, attackData)
     return Vector(x, 0, z)
 end
 
-function SWEP:AttackCalculateSpread(data, attackData, index)
-    local hookResult = self:FireHook("AttackCalculateSpread", data, attackData, index)
+function SWEP:AttackCalculateSpread(id, attackData, index)
+    local hookResult = self:FireHook("AttackCalculateSpread", id, attackData, index)
     if isvector(hookResult) then
         return hookResult
     end
+
+    local data = self:GetAttackTable(id)
 
     local ply = attackData.Attacker
     local spreadData = data.Spread or {}
@@ -154,14 +168,15 @@ function SWEP:AttackCalculateSpread(data, attackData, index)
     )
 end
 
-function SWEP:AttackTrace(data, attackData, index)
+function SWEP:AttackTrace(id, attackData, index)
     local ply = attackData.Attacker
-    local hookResult = self:FireHook("AttackTrace", data, attackData, index)
+    local hookResult = self:FireHook("AttackTrace", id, attackData, index)
     if istable(hookResult) then
         return hookResult
     end
 
-    local spread = self:AttackCalculateSpread(data, attackData, index)
+    local data = self:GetAttackTable(id)
+    local spread = self:AttackCalculateSpread(id, attackData, index)
 
     local direction = ply:GetAimVector()
     local angle = direction:Angle()

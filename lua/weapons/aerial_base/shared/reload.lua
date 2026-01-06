@@ -22,8 +22,8 @@ function SWEP:CanReload()
 
     local ct = CurTime()
 
-    for _, data in ipairs(self:GetAttackTables()) do
-        local nextFire = self:GetNextAttack(data)
+    for id, _ in ipairs(self:GetAttackTables()) do
+        local nextFire = self:GetNextAttack(id)
         if nextFire >= ct then
             return false
         end
@@ -34,9 +34,57 @@ function SWEP:CanReload()
 end
 
 function SWEP:Reload()
-    if not self:CanReload() then
-        return
+    if not self:CanReload() or self:FireHook("Reload") then return end
+    self:ReloadAttack("Primary")
+end
+
+function SWEP:CanAttackReload(id)
+    if self:FireHook("CanAttackReload", id) == false then return false end
+
+    local data = self:GetAttackTable(id)
+
+    local capacity = data.ClipSize
+    local currentMagazine = self:GetAttackMagazineCount(id)
+
+    local ammo = self:GetOwner():GetAmmoCount(data.Ammo)
+
+    return ammo > 0 and (data.CanChamberBullet and currentMagazine <= capacity or currentMagazine < capacity)
+end
+
+function SWEP:ReloadAttack(id)
+    if not self:CanAttackReload(id) or self:FireHook("AttackReload", id) then return end
+    local data = self:GetAttackTable(id)
+
+    local capacity = data.ClipSize
+    local currentMagazine = self:GetAttackMagazineCount(id)
+
+    local normalReloadAnimation = data.ReloadAnimation or ACT_VM_RELOAD
+    local reloadAnimation = normalReloadAnimation
+
+    if currentMagazine <= 0 then
+        reloadAnimation = data.EmptyReloadAnimation or normalReloadAnimation
     end
 
-    self:FireHook("Reload")
+    local duration = self:PlayAnimation(reloadAnimation)
+    self:QueueIdle()
+
+    self:SetReloadName(id)
+    self:SetReloadTime(CurTime() + duration)
+end
+
+function SWEP:ReloadAttackFinish(id)
+    if not self:CanAttackReload(id) or self:FireHook("AttackReload", id) then return end
+    local data = self:GetAttackTable(id)
+    local ply = self:GetOwner()
+
+    local capacity = data.ClipSize
+    local currentMagazine = self:GetAttackMagazineCount(id)
+
+    local target = math.min(math.max(capacity, ply:GetAmmoCount(data.Ammo)), data.ClipSize)
+
+    if target == capacity and currentMagazine == capacity and data.CanChamberBullet then
+        target = target + 1
+    end
+
+    self:SetAttackMagazineCount(id, target)
 end

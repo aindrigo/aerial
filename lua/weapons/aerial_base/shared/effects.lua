@@ -16,8 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:AttackEffects(data, attackData)
-    if self:FireHook("AttackEffects", data, attackData) then return end
+function SWEP:AttackEffects(id, attackData)
+    if self:FireHook("AttackEffects", id, attackData) then return end
+
+    local data = self:GetAttackTable(id)
 
     local ply = attackData.Attacker
     ply:SetAnimation(PLAYER_ATTACK1)
@@ -40,7 +42,7 @@ function SWEP:AttackEffects(data, attackData)
         util.Effect("Impact", impactEffect, true, false)
     end
 
-    self:AttackEffectMuzzleFlash(data, attackData)
+    self:AttackEffectMuzzleFlash(id, attackData)
 end
 
 local flashes = {
@@ -51,9 +53,10 @@ local flashes = {
     "muzzleflash_6"
 }
 
-function SWEP:AttackEffectMuzzleFlash(data, attackData)
-    if self:FireHook("AttackEffectMuzzleFlash", data, attackData) then return end
+function SWEP:AttackEffectMuzzleFlash(id, attackData)
+    if self:FireHook("AttackEffectMuzzleFlash", id, attackData) then return end
     if (game.SinglePlayer() or IsFirstTimePredicted()) then
+        local data = self:GetAttackTable(id)
         local vm = self:VM()
 
         local ply = attackData.Attacker

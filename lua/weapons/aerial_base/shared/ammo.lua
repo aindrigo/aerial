@@ -16,35 +16,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:VM()
-    return self:GetOwner():GetViewModel()
-end
-
-function SWEP:GetAttackTables()
-    local tables = { ["Primary"] = self.Primary, ["Secondary"] = self.Secondary }
-    if istable(self.AttackTables) then
-        for id, data in pairs(self.AttackTables) do
-            tables[id] = data
-        end
+function SWEP:GetAttackMagazineCount(id)
+    if id == "Primary" then
+        return self:Clip1()
+    elseif id == "Secondary" then
+        return self:Clip2()
     end
 
-    return tables
+    return self["Get"..id.."MagazineCount"](self)
 end
 
-function SWEP:GetAttackTable(id)
-    if id == "Primary" then return self.Primary end
-    if id == "Secondary" then return self.Secondary end
+function SWEP:SetAttackMagazineCount(id, value)
+    if id == "Primary" then
+        return self:SetClip1(value)
+    elseif id == "Secondary" then
+        return self:SetClip2(value)
+    end
 
-    return self.AttackTables[id]
+    return self["Set"..id.."MagazineCount"](self, value)
 end
-
-function SWEP:GetOwnerSpeed(min, max)
-    local ply = self:GetOwner()
-
-    min = min or 0
-    max = max or 1
-
-    local vel = ply:GetVelocity()
-    return math.Clamp(vel:Length2D() / ply:GetRunSpeed(), min, max)
-end
-

@@ -39,6 +39,7 @@ SWEP.Primary.EmptySound = Sound("Weapon_Pistol.Empty")
 
 SWEP.Primary.Delay = 0.13
 SWEP.Primary.ShootAnimation = ACT_VM_PRIMARYATTACK
+SWEP.Primary.EmptyReloadAnimation = ACT_VM_RELOAD_EMPTY
 
 SWEP.Primary.Ammo = "pistol"
 SWEP.Primary.Automatic = false
@@ -83,11 +84,12 @@ function SWEP:SetupDataTables()
     self:NetworkVar("Float", "IdleTime")
     self:NetworkVar("Float", "ReloadTime")
     self:NetworkVar("Bool", "Ironsights")
+    self:NetworkVar("String", "ReloadName")
 
     if istable(self.AttackTables) then
-        for _, data in ipairs(self.AttackTables) do
-            local slot = self.DTSlotCounts["Float"]
-            self:NetworkVar("Float", "Next"..data.ID.."Fire")
+        for id, data in pairs(self.AttackTables) do
+            self:NetworkVar("Float", "Next"..id.."Fire")
+            self:NetworkVar("Int", id.."MagazineCount")
         end
     end
 end
