@@ -20,3 +20,6 @@ aerial.enums = aerial.enums or {}
 
 aerial.enums.RELOAD_MODE_NORMAL = 0
 aerial.enums.RELOAD_MODE_BULLET_BY_BULLET = 1
+
+aerial.enums.FIRE_MODE_SEMIAUTOMATIC = 0
+aerial.enums.FIRE_MODE_AUTOMATIC = 1

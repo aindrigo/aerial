@@ -21,6 +21,7 @@ function SWEP:Think()
     self:ThinkADS()
     self:ThinkIdle()
     self:ThinkReload()
+    self:ThinkRecoil()
 end
 
 function SWEP:ThinkAttacks()
@@ -40,13 +41,16 @@ function SWEP:ThinkAttack(id, key)
     if istable(self.ADS) and (self.ADS.Key or IN_ATTACK2) == key then
         aerial.dprint("Warning: conflicting keys for ironsights and attack "..id)
     end
+    
     local magazineCount = self:GetAttackMagazineCount(id)
+    local fireMode = self:GetAttackFireModeEnum(id)
 
-    if magazineCount > 0 and data.Automatic then
+    --print(fireMode)
+    if magazineCount > 0 and fireMode == aerial.enums.FIRE_MODE_AUTOMATIC then
         if ply:KeyDown(key) then
             self:Attack(id)
         end
-    else
+    elseif magazineCount < 1 or fireMode == aerial.enums.FIRE_MODE_SEMIAUTOMATIC then
         if ply:KeyPressed(key) then
             self:Attack(id)
         end
@@ -92,4 +96,12 @@ function SWEP:ThinkReload()
     if ct >= reloadTime and id ~= "" then
         self:ReloadAttackTimer(id)
     end
+end
+
+function SWEP:ThinkRecoil()
+    local recoil = self:GetRecoil()
+    if recoil == vector_origin then return end
+
+    local ft = FrameTime()
+    self:SetRecoil(LerpVector(ft * 16, recoil, vector_origin))
 end

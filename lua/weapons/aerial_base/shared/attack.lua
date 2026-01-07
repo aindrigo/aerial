@@ -49,6 +49,7 @@ function SWEP:Attack(id)
     local delay = data.Delay or 0.1
 
     self:SetNextAttack(id, CurTime() + delay)
+    self:SetLastAttackName(id)
 
     if magazineCount < 1 then
         if data.EmptyAnimation then
@@ -71,6 +72,8 @@ function SWEP:Attack(id)
     attackData.Damage = data.Damage
     attackData.Recoil = self:AttackCalculateRecoil(id, attackData)
     attackData.Traces = {}
+
+    self:SetRecoil(self:GetRecoil() + attackData.Recoil)
 
     for i = 1, (data.ShotCount or 1) do
         local traceResult = self:AttackTrace(id, attackData, i)
@@ -119,7 +122,8 @@ function SWEP:AttackCalculateRecoil(id, attackData)
     local x = util.SharedRandom("ARRX"..ply:SteamID(), recoilData.MinX or min, recoilData.MaxX or max)
     local z = util.SharedRandom("ARRZ"..ply:SteamID(), recoilData.MinZ or min, recoilData.MaxZ or max)
 
-    return Vector(x, 0, z)
+    local currentRecoil = self:GetRecoil()
+    return currentRecoil + Vector(x, 0, z)
 end
 
 function SWEP:AttackCalculateSpread(id, attackData, index)

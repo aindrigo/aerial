@@ -38,6 +38,10 @@ function SWEP:GetAttackTable(id)
     return self.AttackTables[id]
 end
 
+function SWEP:GetLastAttackTable()
+    return self:GetAttackTable(self:GetLastAttackName())
+end
+
 function SWEP:GetOwnerSpeed(min, max)
     local ply = self:GetOwner()
 
@@ -47,4 +51,3 @@ function SWEP:GetOwnerSpeed(min, max)
     local vel = ply:GetVelocity()
     return math.Clamp(vel:Length2D() / ply:GetRunSpeed(), min, max)
 end
-

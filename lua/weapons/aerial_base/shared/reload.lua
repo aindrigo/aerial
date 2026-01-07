@@ -23,6 +23,9 @@ function SWEP:CanReload()
     local ct = CurTime()
 
     for id, _ in pairs(self:GetAttackTables()) do
+        local magazine = self:GetAttackMagazineCount(id)
+        if magazine <= 0 then continue end
+
         local nextFire = self:GetNextAttack(id)
         if nextFire >= ct then
             return false
@@ -53,6 +56,10 @@ end
 
 function SWEP:ReloadAttack(id)
     if self:FireHook("ReloadAttack", id) or not self:CanReloadAttack(id) then return end
+
+    local ply = self:GetOwner()
+    ply:DoReloadEvent()
+
     local data = self:GetAttackTable(id)
 
     local capacity = data.ClipSize

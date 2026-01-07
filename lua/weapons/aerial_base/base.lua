@@ -41,15 +41,18 @@ SWEP.Primary.Delay = 0.13
 SWEP.Primary.ShootAnimation = ACT_VM_PRIMARYATTACK
 SWEP.Primary.EmptyReloadAnimation = ACT_VM_RELOAD_EMPTY
 
-SWEP.Primary.ReloadMode = aerial.enums.RELOAD_MODE_NORMAL
-
 SWEP.Primary.Ammo = "pistol"
-SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = 12
 SWEP.Primary.DefaultClip = 12
-
 SWEP.Primary.MuzzleFlashColor = Color(201, 165, 112)
 
+-- Fire modes
+SWEP.Primary.FireModes = {
+    [0] = aerial.enums.FIRE_MODE_AUTOMATIC, -- 0 is default
+    [1] = aerial.enums.FIRE_MODE_SEMIAUTOMATIC
+}
+
+-- Secondary, disabled
 SWEP.Secondary.ID = "Secondary"
 SWEP.Secondary.EmptySound = Sound("Weapon_Pistol.Empty")
 SWEP.Secondary.Ammo = "none"
@@ -58,10 +61,15 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.ShootAnimation = ACT_VM_SECONDARYATTACK
 
+
 SWEP.Hooks = SWEP.Hooks or {}
 SWEP.ADS = SWEP.ADS or {}
 
 function SWEP:Reset()
+    if CLIENT then
+        self.m_tMuzzle = self:FindMuzzleAttachment()
+    end
+
     self:FireHook("Reset")
     self:SetHoldType(self.HoldType or "revolver")
 
@@ -70,11 +78,14 @@ function SWEP:Reset()
     self:SetADS(false)
     self:SetReloadFinished(false)
     self:SetReloadName("")
+    self:SetRecoil(Vector(0, 0, 0))
 end
 
 function SWEP:Initialize()
     self:FireHook("Initialize")
     self:Reset()
+
+    self:SetLastAttackName("Primary")
 end
 
 function SWEP:Deploy()
@@ -88,16 +99,22 @@ end
 function SWEP:SetupDataTables()
     self:FireHook("SetupDataTables")
 
+
     self:NetworkVar("Float", "IdleTime")
     self:NetworkVar("Float", "ReloadTime")
+    self:NetworkVar("Int", "PrimaryFireMode")
+    self:NetworkVar("Int", "SecondaryFireMode")
+    self:NetworkVar("String", "ReloadName")
+    self:NetworkVar("String", "LastAttackName")
     self:NetworkVar("Bool", "ADS")
     self:NetworkVar("Bool", "ReloadFinished")
-    self:NetworkVar("String", "ReloadName")
+    self:NetworkVar("Vector", "Recoil")
 
     if istable(self.AttackTables) then
         for id, data in pairs(self.AttackTables) do
             self:NetworkVar("Float", "Next"..id.."Fire")
             self:NetworkVar("Int", id.."MagazineCount")
+            self:NetworkVar("Int", id.."FireMode")
         end
     end
 end
