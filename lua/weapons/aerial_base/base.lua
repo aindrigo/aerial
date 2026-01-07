@@ -41,6 +41,8 @@ SWEP.Primary.Delay = 0.13
 SWEP.Primary.ShootAnimation = ACT_VM_PRIMARYATTACK
 SWEP.Primary.EmptyReloadAnimation = ACT_VM_RELOAD_EMPTY
 
+SWEP.Primary.ReloadMode = aerial.enums.RELOAD_MODE_NORMAL
+
 SWEP.Primary.Ammo = "pistol"
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = 12
@@ -57,12 +59,17 @@ SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.ShootAnimation = ACT_VM_SECONDARYATTACK
 
 SWEP.Hooks = SWEP.Hooks or {}
+SWEP.ADS = SWEP.ADS or {}
 
 function SWEP:Reset()
     self:FireHook("Reset")
     self:SetHoldType(self.HoldType or "revolver")
+
     self:SetIdleTime(0)
-    self:SetIronsights(false)
+    self:SetReloadTime(0)
+    self:SetADS(false)
+    self:SetReloadFinished(false)
+    self:SetReloadName("")
 end
 
 function SWEP:Initialize()
@@ -83,7 +90,8 @@ function SWEP:SetupDataTables()
 
     self:NetworkVar("Float", "IdleTime")
     self:NetworkVar("Float", "ReloadTime")
-    self:NetworkVar("Bool", "Ironsights")
+    self:NetworkVar("Bool", "ADS")
+    self:NetworkVar("Bool", "ReloadFinished")
     self:NetworkVar("String", "ReloadName")
 
     if istable(self.AttackTables) then

@@ -18,6 +18,7 @@
 
 function SWEP:Think()
     self:ThinkAttacks()
+    self:ThinkADS()
     self:ThinkIdle()
     self:ThinkReload()
 end
@@ -36,7 +37,9 @@ function SWEP:ThinkAttack(id, key)
     local data = self:GetAttackTable(id)
 
     if data.Ammo == "none" then return end
-
+    if istable(self.ADS) and (self.ADS.Key or IN_ATTACK2) == key then
+        aerial.dprint("Warning: conflicting keys for ironsights and attack "..id)
+    end
     local magazineCount = self:GetAttackMagazineCount(id)
 
     if magazineCount > 0 and data.Automatic then
@@ -47,6 +50,24 @@ function SWEP:ThinkAttack(id, key)
         if ply:KeyPressed(key) then
             self:Attack(id)
         end
+    end
+end
+
+function SWEP:ThinkADS()
+    if not istable(self.ADS) or self.ADS.Enabled == false then return end
+
+    local canAds = self:CanADS()
+
+    local ply = self:GetOwner()
+    local key = self.ADS.Key or IN_ATTACK2
+
+    local down = ply:KeyDown(key)
+    local state = self:GetADS()
+
+    if down and not state and canAds then
+        self:OnADSChange(true)
+    elseif (not down or not canAds) and state then
+        self:OnADSChange(false)
     end
 end
 
@@ -69,9 +90,6 @@ function SWEP:ThinkReload()
     local ct = CurTime()
 
     if ct >= reloadTime and id ~= "" then
-        self:ReloadAttackFinish(id)
-
-        self:SetReloadTime(0)
-        self:SetReloadName("")
+        self:ReloadAttackTimer(id)
     end
 end

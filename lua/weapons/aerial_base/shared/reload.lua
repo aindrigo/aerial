@@ -22,7 +22,7 @@ function SWEP:CanReload()
 
     local ct = CurTime()
 
-    for id, _ in ipairs(self:GetAttackTables()) do
+    for id, _ in pairs(self:GetAttackTables()) do
         local nextFire = self:GetNextAttack(id)
         if nextFire >= ct then
             return false
@@ -30,16 +30,16 @@ function SWEP:CanReload()
     end
 
     local reloadTime = self:GetReloadTime()
-    return ct > reloadTime
+    return ct >= reloadTime
 end
 
 function SWEP:Reload()
-    if not self:CanReload() or self:FireHook("Reload") then return end
+    if self:FireHook("Reload") or not self:CanReload() then return end
     self:ReloadAttack("Primary")
 end
 
-function SWEP:CanAttackReload(id)
-    if self:FireHook("CanAttackReload", id) == false then return false end
+function SWEP:CanReloadAttack(id)
+    if self:FireHook("CanReloadAttack", id) == false then return false end
 
     local data = self:GetAttackTable(id)
 
@@ -52,39 +52,82 @@ function SWEP:CanAttackReload(id)
 end
 
 function SWEP:ReloadAttack(id)
-    if not self:CanAttackReload(id) or self:FireHook("AttackReload", id) then return end
+    if self:FireHook("ReloadAttack", id) or not self:CanReloadAttack(id) then return end
     local data = self:GetAttackTable(id)
 
     local capacity = data.ClipSize
     local currentMagazine = self:GetAttackMagazineCount(id)
 
-    local normalReloadAnimation = data.ReloadAnimation or ACT_VM_RELOAD
-    local reloadAnimation = normalReloadAnimation
-
-    if currentMagazine <= 0 then
-        reloadAnimation = data.EmptyReloadAnimation or normalReloadAnimation
-    end
-
-    local duration = self:PlayAnimation(reloadAnimation)
-    self:QueueIdle()
+    local reloadMode = data.ReloadMode or aerial.enums.RELOAD_MODE_NORMAL
+    local reloadAnimation = nil
 
     self:SetReloadName(id)
-    self:SetReloadTime(CurTime() + duration)
+
+    if reloadMode == aerial.enums.RELOAD_MODE_NORMAL then
+        local normalReloadAnimation = data.ReloadAnimation or ACT_VM_RELOAD
+        local reloadAnimation = normalReloadAnimation
+        if currentMagazine <= 0 then
+            reloadAnimation = data.EmptyReloadAnimation or normalReloadAnimation
+        end
+
+        self:SetReloadTime(CurTime() + self:PlayAnimation(reloadAnimation))
+        self:QueueIdle()
+    elseif reloadMode == aerial.enums.RELOAD_MODE_BULLET_BY_BULLET then
+        self:SetReloadTime(CurTime() + self:PlayAnimation(data.StartReloadAnimation or ACT_SHOTGUN_RELOAD_START))
+        self:QueueIdle()
+    end
 end
 
-function SWEP:ReloadAttackFinish(id)
-    if not self:CanAttackReload(id) or self:FireHook("AttackReload", id) then return end
+function SWEP:ReloadAttackTimer(id)
+    if self:FireHook("AttackReloadTimer", id) then return end
+
     local data = self:GetAttackTable(id)
+    local mode = data.ReloadMode or aerial.enums.RELOAD_MODE_NORMAL
+
     local ply = self:GetOwner()
 
     local capacity = data.ClipSize
     local currentMagazine = self:GetAttackMagazineCount(id)
+    local reserve = ply:GetAmmoCount(data.Ammo)
 
-    local target = math.min(math.max(capacity, ply:GetAmmoCount(data.Ammo)), data.ClipSize)
+    if mode == aerial.enums.RELOAD_MODE_NORMAL then
+        local target = math.min(math.max(capacity, reserve), capacity)
 
-    if target == capacity and currentMagazine == capacity and data.CanChamberBullet then
-        target = target + 1
+        local isChambering = data.CanChamberBullet and target == capacity and currentMagazine > 0
+        if isChambering then
+            target = target + 1
+        end
+
+        local difference = target - math.min(self:GetAttackMagazineCount(id), isChambering and capacity + 1 or capacity)
+        ply:SetAmmo(reserve - difference, data.Ammo)
+
+        self:SetAttackMagazineCount(id, target)
+        self:SetReloadTime(0)
+        self:SetReloadName("")
+    elseif aerial.enums.RELOAD_MODE_BULLET_BY_BULLET then
+        local ct = CurTime()
+
+        if currentMagazine == capacity or reserve == 0 then
+            if self:GetReloadFinished() then
+                self:SetReloadTime(0)
+                self:SetReloadName("")
+                self:SetReloadFinished(false)
+                return
+            end
+
+            self:SetReloadTime(ct + self:PlayAnimation(data.FinishReloadAnimation or ACT_SHOTGUN_RELOAD_FINISH))
+            self:QueueIdle()
+            self:SetReloadFinished(true)
+            return
+        end
+
+        local bulletsToAdd = 1
+        local target = math.min(currentMagazine + bulletsToAdd, reserve)
+        ply:SetAmmo(reserve - bulletsToAdd, data.Ammo)
+
+        self:SetAttackMagazineCount(id, target)
+        self:SetReloadTime(ct + self:PlayAnimation(data.InsertBulletAnimation or ACT_VM_RELOAD))
+        self:QueueIdle()
     end
-
-    self:SetAttackMagazineCount(id, target)
+    
 end

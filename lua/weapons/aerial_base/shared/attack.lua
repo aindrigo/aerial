@@ -36,13 +36,11 @@ function SWEP:CanAttack(id)
     if self:FireHook("CanAttack", id) == false then return false end
 
     local ct = CurTime()
-
-    local nextFire = self:GetNextAttack(id)
-    return ct > nextFire and ct > self:GetReloadTime()
+    return ct >= self:GetNextAttack(id) and ct >= self:GetReloadTime()
 end
 
 function SWEP:Attack(id)
-    if not self:CanAttack(id) or self:FireHook("Attack", id) then return end
+    if self:FireHook("Attack", id) or not self:CanAttack(id) then return end
 
     local data = self:GetAttackTable(id)
     local ply = self:GetOwner()
@@ -139,8 +137,8 @@ function SWEP:AttackCalculateSpread(id, attackData, index)
     cone = cone * attackData.Recoil * (spreadData.RecoilMod or 1)
 
     local mod = 1
-    if isnumber(spreadData.IronsightsMod) and self:GetIronsights() then
-        mod = mod * spreadData.IronsightsMod
+    if isnumber(spreadData.ADSMod) and self:GetADS() then
+        mod = mod * spreadData.ADSMod
     end
 
     if isnumber(spreadData.CrouchMod) and ply:Crouching() then
@@ -169,11 +167,12 @@ function SWEP:AttackCalculateSpread(id, attackData, index)
 end
 
 function SWEP:AttackTrace(id, attackData, index)
-    local ply = attackData.Attacker
     local hookResult = self:FireHook("AttackTrace", id, attackData, index)
     if istable(hookResult) then
         return hookResult
     end
+
+    local ply = attackData.Attacker
 
     local data = self:GetAttackTable(id)
     local spread = self:AttackCalculateSpread(id, attackData, index)
