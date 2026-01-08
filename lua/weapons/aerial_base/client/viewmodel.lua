@@ -25,8 +25,10 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
 
     local ply = self:GetOwner()
     local vm = self:VM()
+
     -- Find muzzle
     local muzzleAttachment = self:GetMuzzleAttachment()
+
     -- Other data
     local matrix = Matrix()
     matrix:Translate(eyePos)
@@ -39,6 +41,7 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
 
     -- Sway LAST
     self:VMViewSway(ct, ft, matrix, muzzleAttachment)
+
     eyePos, eyeAng = matrix:GetTranslation(), matrix:GetAngles()
     return eyePos, eyeAng
 end
@@ -84,7 +87,7 @@ function SWEP:VMViewSway(ct, ft, matrix, muzzle)
 
     self.m_aLastEyeAng = self.m_aLastEyeAng or eyeAng
     local difference = eyeAng - self.m_aLastEyeAng
-    self.m_aLastEyeAng = LerpAngle(ft * 1.6, self.m_aLastEyeAng, eyeAng)
+    self.m_aLastEyeAng = LerpAngle(ft * 1, self.m_aLastEyeAng, eyeAng)
 
     if difference.y >= 180 then
         difference.y = difference.y - 360
@@ -93,6 +96,7 @@ function SWEP:VMViewSway(ct, ft, matrix, muzzle)
     end
 
     local range = 50
+
 
     local rot = Angle(difference.p, difference.y, 0)
     rot.p = math.Clamp(rot.p * 0.3, -range, range)
@@ -104,8 +108,10 @@ function SWEP:VMViewSway(ct, ft, matrix, muzzle)
         rot.y = rot.y + 360
     end
 
-
     local swayOrigin = muzzle.Pos
+    if istable(self.Sway) and isvector(self.Sway.Origin) then
+        swayOrigin = self.Sway.Origin
+    end
 
     matrix:Translate(swayOrigin)
     matrix:Rotate(rot)

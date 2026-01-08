@@ -16,8 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:VM()
-    return self:GetOwner():GetViewModel()
+function SWEP:VM(index)
+    return self:GetOwner():GetViewModel(index)
 end
 
 function SWEP:GetAttackTables()

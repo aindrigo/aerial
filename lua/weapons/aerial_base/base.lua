@@ -61,13 +61,13 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.ShootAnimation = ACT_VM_SECONDARYATTACK
 
-
-SWEP.Hooks = SWEP.Hooks or {}
-SWEP.ADS = SWEP.ADS or {}
+SWEP.Hooks = {}
+SWEP.ADS = {}
+SWEP.Sway = {}
 
 function SWEP:Reset()
     if CLIENT then
-        self.m_tMuzzle = self:FindMuzzleAttachment()
+        self:ResetMuzzleAttachment()
     end
 
     self:FireHook("Reset")
