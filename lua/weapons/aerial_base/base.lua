@@ -63,13 +63,11 @@ SWEP.Secondary.ShootAnimation = ACT_VM_SECONDARYATTACK
 
 SWEP.Hooks = {}
 SWEP.ADS = {}
+
+SWEP.Bob = {}
 SWEP.Sway = {}
 
 function SWEP:Reset()
-    if CLIENT then
-        self:ResetMuzzleAttachment()
-    end
-
     self:FireHook("Reset")
     self:SetHoldType(self.HoldType or "revolver")
 
@@ -79,6 +77,11 @@ function SWEP:Reset()
     self:SetReloadFinished(false)
     self:SetReloadName("")
     self:SetRecoil(Vector(0, 0, 0))
+
+    if CLIENT then
+        self:ResetMuzzleAttachment()
+        self.m_aLastEyeAng = nil
+    end
 end
 
 function SWEP:Initialize()

@@ -39,11 +39,10 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
 
     local moveSpeed = self:GetOwnerSpeed()
 
-    -- Viewbob, etc
-    self:VMViewBob(ct, ft, moveSpeed, matrix)
+    -- Calculations
+    self:VMViewSway(ct, ft, muzzleAttachment, matrix)
+    self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
-    -- Sway LAST
-    self:VMViewSway(ct, ft, matrix, muzzleAttachment)
 
     eyePos, eyeAng = matrix:GetTranslation(), matrix:GetAngles()
     self.m_fLastCurTime = ct
@@ -51,52 +50,78 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     return eyePos, eyeAng
 end
 
-function SWEP:VMViewBob(ct, ft, moveSpeed, matrix)
-    local speed = self.m_fBobLastSpeed or moveSpeed
+function SWEP:VMViewBob(ct, ft, moveSpeed, muzzle, matrix)
+    local bobTable = self.Bob or {}
 
+    local speed = self.m_fBobLastSpeed or moveSpeed
     local time = self.m_fBobTime or 0
 
     local bobFrequency = 1
-    local bobAmplitude = speed * 0.7
+    local bobAmplitude = speed * 2
+
+    if isnumber(bobTable.AmplitudeMultiplier) then
+        bobAmplitude = bobAmplitude * bobTable.AmplitudeMultiplier
+    end
+
+    if isnumber(bobTable.FrequencyMultiplier) then
+        bobAmplitude = bobAmplitude * bobTable.FrequencyMultiplier
+    end
 
     local calculatedPosition = Vector(0, 0, 0)
+    calculatedPosition.x = -speed * 1.5
+    calculatedPosition.z = -speed * 0.75
 
+    local calculatedAngles = Angle(0, 0, 0)
     local t = time * -2.1
 
-    calculatedPosition.y = calculatedPosition.y + sin(time * bobFrequency)
-    calculatedPosition.y = calculatedPosition.y + sin(time * bobFrequency * 2.1 + t) * 0.4
-    calculatedPosition.y = calculatedPosition.y + sin(time * bobFrequency * 2.4 + t) * 0.2
-    calculatedPosition.y = calculatedPosition.y * bobAmplitude * 1.1
+    calculatedAngles.y = calculatedAngles.y + sin(time * bobFrequency)
+    calculatedAngles.y = calculatedAngles.y + sin(time * bobFrequency * 2.1 + t) * 0.4
+    calculatedAngles.y = calculatedAngles.y + sin(time * bobFrequency * 2.4 + t) * 0.2
+    calculatedAngles.y = calculatedAngles.y * bobAmplitude * 1.1
 
-    calculatedPosition.z = calculatedPosition.z + cos(time * bobFrequency * 2) * -0.3
-    calculatedPosition.z = calculatedPosition.z + cos(time * bobFrequency * 2.4) * -0.09
-    calculatedPosition.z = calculatedPosition.z * bobAmplitude
-
-    calculatedPosition.z = calculatedPosition.z - speed * 0.4
-    calculatedPosition.x = -speed
-    local calculatedAngles = Angle(0, 0, 0)
+    calculatedAngles.p = calculatedAngles.p + cos(time * bobFrequency * 2) * -0.3
+    calculatedAngles.p = calculatedAngles.p + cos(time * bobFrequency * 2.4) * -0.09
+    calculatedAngles.p = calculatedAngles.p * bobAmplitude
 
     -- Increase time
-    local delta = ft * math.min(speed, 0.61) * 18
+    local delta = ft * math.min(speed, 0.61) * 17
 
     time = time + delta
     self.m_fBobTime = time
 
     -- Lerp
-    self.m_fBobLastSpeed = Lerp(ft * 16, speed, moveSpeed)
+    self.m_fBobLastSpeed = Lerp(ft * 8, speed, moveSpeed)
 
     -- Translate
     matrix:Translate(calculatedPosition)
+
+    -- Rotate
+    local bobOrigin = muzzle.Pos
+    local forwardMultiplier = 4
+
+    if isnumber(bobTable.ForwardMultiplier) then
+        forwardMultiplier = bobTable.ForwardMultiplier
+    end
+
+    if isvector(bobTable.Origin) then
+        bobOrigin = bobTable.Origin
+    else
+        bobOrigin = bobOrigin + muzzle.Ang:Forward() * forwardMultiplier
+    end
+
+    matrix:Translate(bobOrigin)
     matrix:Rotate(calculatedAngles)
+    matrix:Translate(-bobOrigin)
 end
 
-function SWEP:VMViewSway(ct, ft, matrix, muzzle)
+function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     local swayTable = self.Sway or {}
     local eyeAng = matrix:GetAngles()
 
     self.m_aLastEyeAng = self.m_aLastEyeAng or eyeAng
     local difference = eyeAng - self.m_aLastEyeAng
-    self.m_aLastEyeAng = LerpAngle(ft * 6, self.m_aLastEyeAng, eyeAng)
+
+    self.m_aLastEyeAng = LerpAngle(ft * 5, self.m_aLastEyeAng, eyeAng)
 
     if difference.y >= 180 then
         difference.y = difference.y - 360
@@ -104,7 +129,7 @@ function SWEP:VMViewSway(ct, ft, matrix, muzzle)
         difference.y = difference.y + 360
     end
 
-    local range = 50
+    local range = 30
     local multiplier = swayTable.Multiplier or 1
 
     local rot = Angle(difference.p, difference.y, 0)
@@ -118,12 +143,12 @@ function SWEP:VMViewSway(ct, ft, matrix, muzzle)
     end
 
     local swayOrigin = nil
-    local barrelLength = swayTable.BarrelLength or 6
+    local forwardMultiplier = swayTable.ForwardMultiplier or -4
 
     if isvector(swayTable.Origin) then
         swayOrigin = swayTable.Origin
     else
-        swayOrigin = muzzle.Pos + muzzle.Ang:Forward() * -barrelLength
+        swayOrigin = muzzle.Pos + muzzle.Ang:Forward() * forwardMultiplier
     end
 
     if swayTable.Invert then
