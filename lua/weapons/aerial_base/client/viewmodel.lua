@@ -20,7 +20,7 @@ local sin = math.sin
 local cos = math.cos
 
 function SWEP:GetViewModelPosition(eyePos, eyeAng)
-    -- We have to use our own time-delta calculation because it seems to just not work properly in this hook
+    -- We have to use our own time-delta calculation because (Real)FrameTime seems to just not work properly in this hook
     local ct = UnPredictedCurTime()
     self.m_fLastCurTime = self.m_fLastCurTime or ct
 
@@ -40,6 +40,7 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     local moveSpeed = self:GetOwnerSpeed()
 
     -- Calculations
+    self:VMADS(ct, ft, matrix)
     self:VMViewSway(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
@@ -121,7 +122,16 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     self.m_aLastEyeAng = self.m_aLastEyeAng or eyeAng
     local difference = eyeAng - self.m_aLastEyeAng
 
-    self.m_aLastEyeAng = LerpAngle(ft * 5, self.m_aLastEyeAng, eyeAng)
+    local speed = self.Sway.Speed or 5
+    if self:GetADS() then
+        if istable(self.ADS) and isnumber(self.ADS.SwaySpeed) then
+            speed = self.ADS.SwaySpeed
+        end
+
+        speed = speed * 2
+    end
+
+    self.m_aLastEyeAng = LerpAngle(ft * speed, self.m_aLastEyeAng, eyeAng)
 
     if difference.y >= 180 then
         difference.y = difference.y - 360
@@ -158,4 +168,31 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     matrix:Translate(swayOrigin)
     matrix:Rotate(rot)
     matrix:Translate(-swayOrigin)
+end
+
+function SWEP:VMADS(ct, ft, matrix)
+    if not istable(self.ADS) or not isvector(self.ADS.Position) or not isangle(self.ADS.Angles) then return end
+    local adsData = self.ADS
+
+    local position = adsData.Position
+    local angles = adsData.Angles
+
+    if not isvector(adsData.MiddlePosition) then
+        adsData.MiddlePosition = position + angles:Up() * -4
+    end
+
+    if not isangle(adsData.MiddleAngles) then
+        adsData.MiddleAngles = angles / 2
+    end
+
+    local targetFraction = self:GetADS() and 1 or 0
+    if targetFraction == 1 and self.m_fADSFraction == 1 then
+        matrix:Rotate(angles)
+        matrix:Translate(position)
+        return
+    end
+
+    self.m_fADSFraction = Lerp(ft * (adsData.Speed or 8), self.m_fADSFraction or 0, targetFraction)
+    matrix:Rotate(math.QuadraticBezier(self.m_fADSFraction, Angle(), adsData.MiddleAngles, angles))
+    matrix:Translate(math.QuadraticBezier(self.m_fADSFraction, Vector(), adsData.MiddlePosition, position))
 end

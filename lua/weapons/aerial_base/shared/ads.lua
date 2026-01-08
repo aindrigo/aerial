@@ -18,7 +18,7 @@
 
 function SWEP:CanADS()
     local ct = CurTime()
-    return ct >= self:GetReloadTime()
+    return not self:GetReloading() and ct >= self:GetReloadTime()
 end
 
 function SWEP:OnADSChange(state)

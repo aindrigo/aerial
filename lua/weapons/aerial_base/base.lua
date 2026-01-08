@@ -85,6 +85,8 @@ function SWEP:Reset()
 end
 
 function SWEP:Initialize()
+    aerial.Attachments.Data[self:EntIndex()] = {}
+
     self:FireHook("Initialize")
     self:Reset()
 
@@ -99,6 +101,12 @@ function SWEP:Deploy()
     self:QueueIdle()
 end
 
+function SWEP:OnReloaded()
+    if CLIENT and istable(self.ADS) then
+        self.ADS.MiddlePosition = nil
+        self.ADS.MiddleAngles = nil
+    end
+end
 function SWEP:SetupDataTables()
     self:FireHook("SetupDataTables")
 
@@ -110,6 +118,7 @@ function SWEP:SetupDataTables()
     self:NetworkVar("String", "ReloadName")
     self:NetworkVar("String", "LastAttackName")
     self:NetworkVar("Bool", "ADS")
+    self:NetworkVar("Bool", "Reloading")
     self:NetworkVar("Bool", "ReloadFinished")
     self:NetworkVar("Vector", "Recoil")
 
