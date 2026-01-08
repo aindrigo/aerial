@@ -102,14 +102,15 @@ function SWEP:Deploy()
 end
 
 function SWEP:OnReloaded()
+    self:SetHoldType(self.HoldType)
     if CLIENT and istable(self.ADS) then
         self.ADS.MiddlePosition = nil
         self.ADS.MiddleAngles = nil
     end
 end
+
 function SWEP:SetupDataTables()
     self:FireHook("SetupDataTables")
-
 
     self:NetworkVar("Float", "IdleTime")
     self:NetworkVar("Float", "ReloadTime")
