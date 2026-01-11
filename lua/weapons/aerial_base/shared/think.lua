@@ -22,6 +22,7 @@ function SWEP:Think()
     self:ThinkIdle()
     self:ThinkReload()
     self:ThinkRecoil()
+    self:ThinkCustomRecoil()
 end
 
 function SWEP:ThinkAttacks()
@@ -107,5 +108,41 @@ function SWEP:ThinkRecoil()
     local recoilData = self.Recoil or {}
     local compensation = recoilData.Compensation or 1
 
-    self:SetRecoil(LerpVector(ft * 16 * compensation, recoil, vector_origin))
+    self:SetRecoil(aerial.math.Lerp(ft * 16 * compensation, recoil, vector_origin))
+end
+
+function SWEP:ThinkCustomRecoil()
+    local ft = FrameTime()
+    
+    local targetPosition = self:GetCustomRecoilTargetPosition()
+    local targetAngles = self:GetCustomRecoilTargetAngles()
+
+    local currentPosition = self:GetCustomRecoilPosition()
+    local currentAngles = self:GetCustomRecoilAngles()
+
+    local mode = self:GetCustomRecoilMode()
+
+    if currentPosition == targetPosition and currentAngles == targetAngles then
+        if mode == aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING then
+            return
+        end
+
+        mode = aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING
+        targetPosition = Vector()
+        targetAngles = Angle()
+
+
+        self:SetCustomRecoilMode(mode)
+        self:SetCustomRecoilTargetPosition(targetPosition)
+        self:SetCustomRecoilTargetAngles(targetAngles)
+    end
+
+    local speed = mode == aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING and 8 or 32
+
+    speed = ft * speed
+    currentPosition = aerial.math.Lerp(speed, currentPosition, targetPosition)
+    currentAngles = aerial.math.Lerp(speed, currentAngles, targetAngles)
+
+    self:SetCustomRecoilPosition(currentPosition)
+    self:SetCustomRecoilAngles(currentAngles)
 end

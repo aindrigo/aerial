@@ -25,8 +25,25 @@ function SWEP:AttackEffects(id, attackData)
     ply:SetAnimation(PLAYER_ATTACK1)
 
     self:EmitSound(data.Sound, SNDLVL_GUNFIRE)
-    self:PlayAnimation(data.ShootAnimation)
-    self:QueueIdle()
+
+    local customRecoil = data.CustomRecoil or {}
+    if (self:GetADS() and not data.ShootAnimationADS) or customRecoil.Always then
+        if customRecoil.UseShootAnimation or customRecoil.Disabled then
+            print("You do it to yourself, you do")
+
+            self:PlayAnimation(data.ShootAnimation)
+            self:QueueIdle()
+        end
+
+        if not customRecoil.Disabled then
+            self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
+            self:SetCustomRecoilTargetPosition(Vector(-1, 0, -0.1))
+        end
+    else
+        self:PlayAnimation(data.ShootAnimation)
+        self:QueueIdle()
+    end
+
 
     for _, traceResult in ipairs(attackData.Traces) do
         -- Bullet hole

@@ -42,6 +42,7 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     -- Calculations
     self:VMADS(ct, ft, matrix)
     self:VMViewSway(ct, ft, muzzleAttachment, matrix)
+    self:VMCustomRecoil(ct, ft, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
 
@@ -131,7 +132,7 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
         speed = speed * 2
     end
 
-    self.m_aLastEyeAng = LerpAngle(ft * speed, self.m_aLastEyeAng, eyeAng)
+    self.m_aLastEyeAng = aerial.math.Lerp(ft * speed, self.m_aLastEyeAng, eyeAng)
 
     if difference.y >= 180 then
         difference.y = difference.y - 360
@@ -195,4 +196,13 @@ function SWEP:VMADS(ct, ft, matrix)
     self.m_fADSFraction = Lerp(ft * (adsData.Speed or 8), self.m_fADSFraction or 0, targetFraction)
     matrix:Rotate(math.QuadraticBezier(self.m_fADSFraction, Angle(), adsData.MiddleAngles, angles))
     matrix:Translate(math.QuadraticBezier(self.m_fADSFraction, Vector(), adsData.MiddlePosition, position))
+end
+
+function SWEP:VMCustomRecoil(ct, ft, matrix)
+    local currentPosition = self:GetCustomRecoilPosition()
+    local currentAngles = self:GetCustomRecoilAngles()
+
+    if currentPosition == vector_origin and currentAngles == angle_zero then return end
+    matrix:Translate(currentPosition)
+    matrix:Rotate(currentAngles)
 end

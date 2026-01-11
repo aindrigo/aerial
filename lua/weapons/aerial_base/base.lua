@@ -73,10 +73,18 @@ function SWEP:Reset()
 
     self:SetIdleTime(0)
     self:SetReloadTime(0)
+    self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING)
     self:SetADS(false)
     self:SetReloadFinished(false)
     self:SetReloadName("")
-    self:SetRecoil(Vector())
+
+    local zeroVec = Vector()
+    local zeroAng = Angle()
+    self:SetRecoil(zeroVec)
+    self:SetCustomRecoilPosition(zeroVec)
+    self:SetCustomRecoilAngles(zeroAng)
+    self:SetCustomRecoilTargetPosition(zeroVec)
+    self:SetCustomRecoilTargetAngles(zeroAng)
 
     if CLIENT then
         self:ResetMuzzleAttachment()
@@ -117,12 +125,17 @@ function SWEP:SetupDataTables()
     self:NetworkVar("Float", "ReloadTime")
     self:NetworkVar("Int", "PrimaryFireMode")
     self:NetworkVar("Int", "SecondaryFireMode")
+    self:NetworkVar("Int", "CustomRecoilMode")
     self:NetworkVar("String", "ReloadName")
     self:NetworkVar("String", "LastAttackName")
     self:NetworkVar("Bool", "ADS")
     self:NetworkVar("Bool", "Reloading")
     self:NetworkVar("Bool", "ReloadFinished")
     self:NetworkVar("Vector", "Recoil")
+    self:NetworkVar("Vector", "CustomRecoilPosition")
+    self:NetworkVar("Vector", "CustomRecoilTargetPosition")
+    self:NetworkVar("Angle", "CustomRecoilAngles")
+    self:NetworkVar("Angle", "CustomRecoilTargetAngles")
 
     if istable(self.AttackTables) then
         for id, data in pairs(self.AttackTables) do
