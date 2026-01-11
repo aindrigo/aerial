@@ -25,3 +25,4 @@ aerial.math = aerial.math or {}
 function aerial.math.RPM(rpm)
     return 60 / rpm
 end
+

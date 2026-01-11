@@ -102,7 +102,7 @@ function SWEP:ThinkRecoil()
     local ft = FrameTime()
 
     local recoil = self:GetRecoil()
-    if recoil == vector_origin then return end
+    if recoil.x <= 0 and recoil.z <= 0 then return end
 
     local recoilData = self.Recoil or {}
     local compensation = recoilData.Compensation or 1
