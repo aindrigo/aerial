@@ -76,16 +76,13 @@ function SWEP:Reset()
     self:SetADS(false)
     self:SetReloadFinished(false)
     self:SetReloadName("")
+    self:SetRecoil(Vector())
 
     if CLIENT then
         self:ResetMuzzleAttachment()
         self.m_aLastEyeAng = nil
     end
 
-    local zero = Vector()
-    for id, data in pairs(self:GetAttackTables()) do
-        self:SetAttackRecoil(id, zero)
-    end
 end
 
 function SWEP:Initialize()
@@ -125,15 +122,13 @@ function SWEP:SetupDataTables()
     self:NetworkVar("Bool", "ADS")
     self:NetworkVar("Bool", "Reloading")
     self:NetworkVar("Bool", "ReloadFinished")
-    self:NetworkVar("Vector", "PrimaryRecoil")
-    self:NetworkVar("Vector", "SecondaryRecoil")
+    self:NetworkVar("Vector", "Recoil")
 
     if istable(self.AttackTables) then
         for id, data in pairs(self.AttackTables) do
             self:NetworkVar("Float", "Next"..id.."Fire")
             self:NetworkVar("Int", id.."MagazineCount")
             self:NetworkVar("Int", id.."FireMode")
-            self:NetworkVar("Vector", id.."Recoil")
         end
     end
 end

@@ -26,16 +26,6 @@ function SWEP:SetNextAttack(id, value)
     return func(self, value)
 end
 
-function SWEP:GetAttackRecoil(id)
-    local func = self["Get"..id.."Recoil"]
-    return func(self)
-end
-
-function SWEP:SetAttackRecoil(id, value)
-    local func = self["Set"..id.."Recoil"]
-    return func(self, value)
-end
-
 function SWEP:PrimaryAttack()
 end
 
@@ -83,7 +73,7 @@ function SWEP:Attack(id)
     attackData.Recoil = self:AttackCalculateRecoil(id, attackData)
     attackData.Traces = {}
 
-    self:SetAttackRecoil(id, self:GetAttackRecoil(id) + attackData.Recoil)
+    self:SetRecoil(self:GetRecoil() + attackData.Recoil)
 
     for i = 1, (data.ShotCount or 1) do
         local traceResult = self:AttackTrace(id, attackData, i)
@@ -132,7 +122,8 @@ function SWEP:AttackCalculateRecoil(id, attackData)
     local x = util.SharedRandom("ARRX"..ply:SteamID(), recoilData.MinX or min, recoilData.MaxX or max)
     local z = util.SharedRandom("ARRZ"..ply:SteamID(), recoilData.MinZ or min, recoilData.MaxZ or max)
 
-    local compensation = recoilData.Compensation or 1
+    local globalRecoilData = self.Recoil or {}
+    local compensation = globalRecoilData.Compensation or 1
     compensation = 1 / compensation
 
     return Vector(x, 0, z) * compensation

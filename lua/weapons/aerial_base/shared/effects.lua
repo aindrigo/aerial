@@ -110,8 +110,8 @@ function SWEP:AttackEffectRecoil(id, attackData)
     local recoil = attackData.Recoil
     local recoilData = data.Recoil or {}
 
-    local xPunch = recoilData.PunchX or 0.25
-    local zPunch = recoilData.PunchZ or 0.1625
+    local xPunch = recoilData.PunchX or 0.15
+    local zPunch = recoilData.PunchZ or 0.07
 
     local punch = Angle(
         util.SharedRandom("ARVPP", -recoil.z * zPunch, recoil.z * zPunch),

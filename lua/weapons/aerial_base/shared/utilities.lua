@@ -42,6 +42,7 @@ function SWEP:GetLastAttackTable()
     return self:GetAttackTable(self:GetLastAttackName())
 end
 
+
 function SWEP:GetOwnerSpeed(min, max)
     local ply = self:GetOwner()
 
