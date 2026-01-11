@@ -37,7 +37,11 @@ function SWEP:AttackEffects(id, attackData)
 
         if not customRecoil.Disabled then
             self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
-            self:SetCustomRecoilTargetPosition(Vector(-1, 0, -0.1))
+
+            local force = customRecoil.Force or attackData.Damage / 6
+    
+            self:SetCustomRecoilTargetPosition(Vector(-force, 0, 0))
+            self:SetCustomRecoilTargetAngles(Angle(-force, 0, 0))
         end
     else
         self:PlayAnimation(data.ShootAnimation)

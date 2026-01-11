@@ -75,6 +75,7 @@ function SWEP:Reset()
     self:SetReloadTime(0)
     self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING)
     self:SetADS(false)
+    self:SetReloading(false)
     self:SetReloadFinished(false)
     self:SetReloadName("")
 

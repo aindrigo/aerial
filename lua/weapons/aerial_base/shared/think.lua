@@ -137,7 +137,7 @@ function SWEP:ThinkCustomRecoil()
         self:SetCustomRecoilTargetAngles(targetAngles)
     end
 
-    local speed = mode == aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING and 8 or 32
+    local speed = mode == aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING and 8 or 48
 
     speed = ft * speed
     currentPosition = aerial.math.Lerp(speed, currentPosition, targetPosition)

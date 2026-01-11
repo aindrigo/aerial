@@ -42,7 +42,7 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     -- Calculations
     self:VMADS(ct, ft, matrix)
     self:VMViewSway(ct, ft, muzzleAttachment, matrix)
-    self:VMCustomRecoil(ct, ft, matrix)
+    self:VMCustomRecoil(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
 
@@ -198,11 +198,26 @@ function SWEP:VMADS(ct, ft, matrix)
     matrix:Translate(math.QuadraticBezier(self.m_fADSFraction, Vector(), adsData.MiddlePosition, position))
 end
 
-function SWEP:VMCustomRecoil(ct, ft, matrix)
+function SWEP:VMCustomRecoil(ct, ft, muzzle, matrix)
     local currentPosition = self:GetCustomRecoilPosition()
     local currentAngles = self:GetCustomRecoilAngles()
 
-    if currentPosition == vector_origin and currentAngles == angle_zero then return end
-    matrix:Translate(currentPosition)
-    matrix:Rotate(currentAngles)
+    local smoothPosition = self.m_vCurrentRecoilPosition or currentPosition
+    local smoothAngles = self.m_aCurrentRecoilAngles or currentAngles
+
+    -- Smooth it out because tickrate can be low
+    smoothPosition = aerial.math.Lerp(ft * 48, smoothPosition, currentPosition)
+    smoothAngles = aerial.math.Lerp(ft * 48, smoothAngles, currentAngles)
+
+    if smoothPosition == vector_origin and smoothAngles == angle_zero then return end
+
+    self.m_vCurrentRecoilPosition = smoothPosition
+    self.m_aCurrentRecoilAngles = smoothAngles
+
+
+    matrix:Translate(smoothPosition)
+
+    matrix:Translate(muzzle.Pos)
+    matrix:Rotate(smoothAngles)
+    matrix:Translate(-muzzle.Pos)
 end
