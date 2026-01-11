@@ -16,8 +16,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:AddAttachment(name)
-    if not istable(self.Attachments) or not istable(self.Attachments[id]) then
+function SWEP:HasAttachment(name)
+    if not istable(self.Attachments) or not istable(self.Attachments[name]) or not istable(aerial.Attachments.Data[id]) then
+        return false
+    end
+
+    for _, attachmentName in ipairs(aerial.Attachments.Data[id]) do
+        if attachmentName == name then
+            return true
+        end
+    end
+
+    return false
+end
+
+function SWEP:GiveAttachment(name)
+    if not istable(self.Attachments) or not istable(self.Attachments[name]) then
         error("Invalid attachment "..name)
         return
     end
@@ -33,8 +47,8 @@ function SWEP:AddAttachment(name)
     net.Broadcast()
 end
 
-function SWEP:RemoveAttachment(name)
-    if not istable(self.Attachments) or not istable(self.Attachments[id]) then
+function SWEP:TakeAttachment(name)
+    if not istable(self.Attachments) or not istable(self.Attachments[name]) then
         error("Invalid attachment "..name)
         return
     end

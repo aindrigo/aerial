@@ -99,9 +99,15 @@ function SWEP:ThinkReload()
 end
 
 function SWEP:ThinkRecoil()
-    local recoil = self:GetRecoil()
-    if recoil == vector_origin then return end
-
     local ft = FrameTime()
-    self:SetRecoil(LerpVector(ft * 16, recoil, vector_origin))
+
+    for id, data in pairs(self:GetAttackTables()) do
+        local recoil = self:GetAttackRecoil(id)
+        if recoil == vector_origin then continue end
+
+        local recoilData = data.Recoil or {}
+        local compensation = recoilData.Compensation or 1
+
+        self:SetAttackRecoil(id, LerpVector(ft * 16 * compensation, recoil, vector_origin))
+    end
 end
