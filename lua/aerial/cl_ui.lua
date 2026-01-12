@@ -18,7 +18,26 @@
 
 aerial.ui = aerial.ui or {}
 
+surface.CreateFont("aerial24", {
+    font = "Roboto",
+    size = 24,
+    weight = 300,
+    antialias = true
+})
 
+surface.CreateFont("aerial32", {
+    font = "Roboto",
+    size = 32,
+    weight = 300,
+    antialias = true
+})
+
+surface.CreateFont("aerial48", {
+    font = "Roboto",
+    size = 48,
+    weight = 300,
+    antialias = true
+})
 --- Draws a line. Similar to surface.DrawLine but with thickness
 -- @realm client
 -- @number xStart X start position

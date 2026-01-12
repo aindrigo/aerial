@@ -21,6 +21,8 @@ aerial = aerial or {}
 -- Major, minor, revision/patch
 aerial.version = { 1, 0, 0 }
 
+aerial.color = Color(62, 178, 20)
+
 --- Includes a file
 -- @string filePath File path
 -- @string[opt] fileName File name, auto-detected if not provided

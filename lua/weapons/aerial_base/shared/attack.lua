@@ -86,6 +86,9 @@ function SWEP:Attack(id)
     end
 
     self:AttackEffects(id, attackData)
+
+    self.m_tLastAttacks = self.m_tLastAttacks or {}
+    self.m_tLastAttacks[id] = attackData
 end
 
 function SWEP:AttackHitEntity(id, attackData, traceResult)
@@ -167,6 +170,8 @@ function SWEP:AttackTrace(id, attackData, index)
 
     local data = self:GetAttackTable(id)
     local spread = self:AttackCalculateSpread(id, attackData, index)
+
+    attackData.Spread = spread
 
     local direction = ply:GetAimVector()
     local angle = direction:Angle()

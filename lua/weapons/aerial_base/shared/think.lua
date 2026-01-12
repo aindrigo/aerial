@@ -103,12 +103,11 @@ function SWEP:ThinkRecoil()
     local ft = FrameTime()
 
     local recoil = self:GetRecoil()
-    if recoil.x <= 0 and recoil.z <= 0 then return end
-
+    if recoil.x == 0 and recoil.z == 0 then return end
     local recoilData = self.Recoil or {}
     local compensation = recoilData.Compensation or 1
 
-    self:SetRecoil(aerial.math.Lerp(ft * 16 * compensation, recoil, vector_origin))
+    self:SetRecoil(aerial.math.Lerp(ft * 4 * compensation, recoil, vector_origin))
 end
 
 function SWEP:ThinkCustomRecoil()
