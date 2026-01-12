@@ -21,10 +21,11 @@ local cos = math.cos
 
 function SWEP:GetViewModelPosition(eyePos, eyeAng)
     -- We have to use our own time-delta calculation because (Real)FrameTime seems to just not work properly in this hook
-    local ct = UnPredictedCurTime()
+    -- Also, SysTime is much smoother
+    local ct = SysTime()
     self.m_fLastCurTime = self.m_fLastCurTime or ct
 
-    local ft = ct - self.m_fLastCurTime
+    local ft = (ct - self.m_fLastCurTime) * GetConVar("host_timescale"):GetFloat()
 
     local ply = self:GetOwner()
     local vm = self:VM()
@@ -66,7 +67,7 @@ function SWEP:VMViewBob(ct, ft, moveSpeed, muzzle, matrix)
     end
 
     if isnumber(bobTable.FrequencyMultiplier) then
-        bobAmplitude = bobAmplitude * bobTable.FrequencyMultiplier
+        bobFrequency = bobFrequency * bobTable.FrequencyMultiplier
     end
 
     local calculatedPosition = Vector(0, 0, 0)
@@ -86,7 +87,7 @@ function SWEP:VMViewBob(ct, ft, moveSpeed, muzzle, matrix)
     calculatedAngles.p = calculatedAngles.p * bobAmplitude
 
     -- Increase time
-    local delta = ft * math.min(speed, 0.61) * 17
+    local delta = ft * math.min(speed, 0.61) * 16
 
     time = time + delta
     self.m_fBobTime = time
@@ -123,7 +124,7 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     self.m_aLastEyeAng = self.m_aLastEyeAng or eyeAng
     local difference = eyeAng - self.m_aLastEyeAng
 
-    local speed = self.Sway.Speed or 5
+    local speed = self.Sway.Speed or 6
     if self:GetADS() then
         if istable(self.ADS) and isnumber(self.ADS.SwaySpeed) then
             speed = self.ADS.SwaySpeed
@@ -193,7 +194,7 @@ function SWEP:VMADS(ct, ft, matrix)
         return
     end
 
-    self.m_fADSFraction = Lerp(ft * (adsData.Speed or 8), self.m_fADSFraction or 0, targetFraction)
+    self.m_fADSFraction = Lerp(ft * (adsData.Speed or 12), self.m_fADSFraction or 0, targetFraction)
     matrix:Rotate(math.QuadraticBezier(self.m_fADSFraction, Angle(), adsData.MiddleAngles, angles))
     matrix:Translate(math.QuadraticBezier(self.m_fADSFraction, Vector(), adsData.MiddlePosition, position))
 end

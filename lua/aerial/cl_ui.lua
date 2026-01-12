@@ -20,6 +20,7 @@ aerial.ui = aerial.ui or {}
 
 
 --- Draws a line. Similar to surface.DrawLine but with thickness
+-- @realm client
 -- @number xStart X start position
 -- @number yStart X end position
 -- @number xEnd Y start position

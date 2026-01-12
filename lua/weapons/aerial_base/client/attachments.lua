@@ -75,20 +75,36 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         matrix:Rotate(cosmeticData.Angles)
     end
 
+    local shouldMask = false
+
     model:SetPos(matrix:GetTranslation())
     model:SetAngles(matrix:GetAngles())
 
     model:DrawModel(flags)
+
+    if istable(cosmeticData.Reticule) then
+        aerial.render.MaskEntity(model)
+        self:VMDrawReticule(name, data, vm, model, matrix, cosmeticData.Reticule)
+        aerial.render.Unmask()
+    elseif istable(cosmeticData.Reticules) then
+        aerial.render.MaskEntity(model)
+
+        for _, reticule in ipairs(cosmeticData.Reticules) do
+            self:VMDrawReticule(name, data, vm, model, matrix, reticule)
+        end
+
+        aerial.render.Unmask()
+    end
 end
 
-function SWEP:VMDrawRenderTarget(name, data, vm, model, rtData)
+function SWEP:VMDrawRenderTarget(name, data, vm, model, renderTargetData)
     local width = aerial.renderTarget.widthConvar:GetInt()
     local height = aerial.renderTarget.heightConvar:GetInt()
 
     local renderData = {}
     renderData.origin = vm:GetPos()
     renderData.angles = vm:GetAngles()
-    renderData.fov = rtData.FOV or 14
+    renderData.fov = renderTargetData.FOV or 14
     renderData.x = 0
     renderData.y = 0
     renderData.w = width
@@ -110,9 +126,34 @@ function SWEP:VMDrawRenderTarget(name, data, vm, model, rtData)
     render.PopRenderTarget()
     render.OverrideAlphaWriteEnable(false, false)
 
-    if rtData.SubMaterial then
-        model:SetSubMaterial(rtData.SubMaterial, "!"..aerial.renderTarget.material:GetName())
+    if renderTargetData.SubMaterial then
+        model:SetSubMaterial(renderTargetData.SubMaterial, "!"..aerial.renderTarget.material:GetName())
     end
+end
+
+function SWEP:VMDrawReticule(name, data, vm, model, modelMatrix, reticuleData)
+    local matrix = Matrix(modelMatrix)
+
+    
+    if isvector(reticuleData.Position) then
+        matrix:Translate(reticuleData.Position)
+    end
+
+    if isangle(reticuleData.Angles) then
+        matrix:Rotate(reticuleData.Angles)
+    end
+
+    local rotation = matrix:GetAngles()
+
+    render.SetMaterial(reticuleData.Material)
+    render.DrawQuadEasy(
+        matrix:GetTranslation(),
+        rotation:Forward(),
+        reticuleData.Width or 32,
+        reticuleData.Height or 32,
+        reticuleData.Color or color_white,
+        rotation.r - 180
+    )
 end
 
 function SWEP:ViewModelDrawn(vm, flags)
