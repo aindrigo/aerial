@@ -33,20 +33,18 @@ function SWEP:TakeAttachment(name)
     end
 end
 
-function SWEP:VMDrawAttachment(name, data)
+function SWEP:VMDrawAttachment(name, data, vm, flags)
     local attachment = self.Attachments[name]
     if not istable(attachment.Cosmetic) or not istable(attachment.Cosmetic.View) then return end
 
-    local vm = self:VM()
-
     local cosmeticData = attachment.Cosmetic.View
-    local csModel = data.m_eCSModelVM
+    local model = data.m_eCSModelVM
 
-    if not IsValid(csModel) then
-        csModel = ClientsideModel(cosmeticData.Model, RENDERGROUP_VIEWMODEL)
-        csModel:SetParent(vm)
-        csModel:SetNoDraw(true)
-        data.m_eCSModelVM = csModel
+    if not IsValid(model) then
+        model = ClientsideModel(cosmeticData.Model, RENDERGROUP_VIEWMODEL)
+        model:SetParent(vm)
+        model:SetNoDraw(true)
+        data.m_eCSModelVM = model
     end
 
     local matrix
@@ -77,17 +75,49 @@ function SWEP:VMDrawAttachment(name, data)
         matrix:Rotate(cosmeticData.Angles)
     end
 
-    csModel:SetPos(matrix:GetTranslation())
-    csModel:SetAngles(matrix:GetAngles())
-    csModel:DrawModel()
+    model:SetPos(matrix:GetTranslation())
+    model:SetAngles(matrix:GetAngles())
+
+    model:DrawModel(flags)
 end
 
-function SWEP:ViewModelDrawn()
-    local vm = self:VM()
-    if not IsValid(vm) then return end
+function SWEP:VMDrawRenderTarget(name, data, vm, model, rtData)
+    local width = aerial.renderTarget.widthConvar:GetInt()
+    local height = aerial.renderTarget.heightConvar:GetInt()
 
+    local renderData = {}
+    renderData.origin = vm:GetPos()
+    renderData.angles = vm:GetAngles()
+    renderData.fov = rtData.FOV or 14
+    renderData.x = 0
+    renderData.y = 0
+    renderData.w = width
+    renderData.h = height
+
+    renderData.drawviewmodel = false
+    renderData.drawhud = false
+    renderData.aspect = 1
+
+    render.PushRenderTarget(aerial.renderTarget.rt)
+    render.OverrideAlphaWriteEnable(true, true)
+
+    cam.Start2D()
+    render.Clear(0, 0, 0, 255)
+    render.RenderView(renderData)
+    cam.End2D()
+
+    draw.NoTexture()
+    render.PopRenderTarget()
+    render.OverrideAlphaWriteEnable(false, false)
+
+    if rtData.SubMaterial then
+        model:SetSubMaterial(rtData.SubMaterial, "!"..aerial.renderTarget.material:GetName())
+    end
+end
+
+function SWEP:ViewModelDrawn(vm, flags)
     local attachments = aerial.Attachments.Data[self:EntIndex()] or {}
     for name, data in pairs(attachments) do
-        self:VMDrawAttachment(name, data)
+        self:VMDrawAttachment(name, data, vm, flags)
     end
 end

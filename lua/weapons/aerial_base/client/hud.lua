@@ -16,24 +16,26 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:CalculateFOV()
-    local hookResult = self:FireHook("CalculateFOV")
+function SWEP:DrawAttachmentHUD(name, data)
+    local attachment = self.Attachments[name]
+    if not istable(attachment) then return end
 
-    local mod = 1
-    if hookResult ~= nil then
-        mod = mod * hookResult
+    if istable(attachment.Cosmetic) and istable(attachment.Cosmetic.View) then
+        local vm = self:VM()
+        local cosmeticData = attachment.Cosmetic.View
+        local model = data.m_eCSModelVM
+
+        if IsValid(model) and istable(cosmeticData.RenderTarget) then
+            self:VMDrawRenderTarget(name, data, vm, model, cosmeticData.RenderTarget)
+        end
     end
-
-    if istable(self.ADS) and isnumber(self.ADS.FOV) and self:GetADS() then
-        mod = mod * self.ADS.FOV
-    end
-
-    return mod
 end
 
-function SWEP:TranslateFOV(fov)
-    local multiplier = self:CalculateFOV()
-    self.m_fFOVMultiplier = Lerp(FrameTime() * 2, self.m_fFOVMultiplier or multiplier, multiplier)
-
-    return fov * self.m_fFOVMultiplier
+function SWEP:DrawHUD()
+    local attachments = aerial.Attachments.Data[self:EntIndex()]
+    if istable(attachments) then
+        for name, data in pairs(attachments) do
+            self:DrawAttachmentHUD(name, data)
+        end
+    end
 end

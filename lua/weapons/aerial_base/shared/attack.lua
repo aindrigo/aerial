@@ -143,8 +143,7 @@ function SWEP:AttackCalculateSpread(id, attackData, index)
     local cone = Vector(spreadData.Cone, 0, spreadData.Cone)
     cone = cone * attackData.Recoil * (spreadData.RecoilMod or 1)
 
-    local mod = self:GetSpreadModifier(spreadData)
-
+    local mod = self:_GetSpreadModifier(spreadData)
     cone:Mul(mod)
     cone = cone / 2
 

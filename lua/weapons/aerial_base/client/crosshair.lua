@@ -27,7 +27,7 @@ function SWEP:GetCrosshairGap()
     local spreadData = attackData.Spread or {}
 
     local base = spreadData.Cone
-    base = base * self:GetSpreadModifier(spreadData)
+    base = base * self:_GetSpreadModifier(spreadData)
 
     return base * 128
 end
