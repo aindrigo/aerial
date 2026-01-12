@@ -16,33 +16,31 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:GiveAttachment(name, network)
-    if not istable(self.Attachments) or not istable(self.Attachments[name]) then
-        error("Invalid attachment "..name)
-        return
+function SWEP:HasAttachment(name)
+    local id = self:EntIndex()
+    if not istable(self.Attachments) or not istable(self.Attachments[name]) or not istable(aerial.Attachments.Data[id]) then
+        return false
     end
 
-    self:_AddAttachment(name)
-
-    if network ~= false then
-        net.Start("aerial.AddAttachment")
-        net.WriteUInt(self:EntIndex(), 16)
-        net.WriteString(name)
-        net.Broadcast()
-    end
+    return istable(aerial.Attachments.Data[id][name])
 end
 
-function SWEP:TakeAttachment(name, network)
-    if not istable(self.Attachments) or not istable(self.Attachments[name]) then
-        error("Invalid attachment "..name)
-        return
-    end
+function SWEP:AttachmentExists(name)
+    return istable(self.Attachments) and istable(self.Attachments[name])
+end
 
-    self:_RemoveAttachment(name)
-    if network ~= false then
-        net.Start("aerial.RemoveAttachment")
-        net.WriteUInt(self:EntIndex(), 16)
-        net.WriteString(name)
-        net.Broadcast()
-    end
+function SWEP:_AddAttachment(name)
+    local id = self:EntIndex()
+    aerial.Attachments.Data[id] = aerial.Attachments.Data[id] or {}
+    aerial.Attachments.Data[id][name] = {}
+end
+
+function SWEP:_RemoveAttachment(name)
+    local id = self:EntIndex()
+    aerial.Attachments.Data[id] = aerial.Attachments.Data[id] or {}
+
+    local data = aerial.Attachments.Data[id][name]
+    aerial.Attachments.Data[id][name] = nil
+
+    return data
 end

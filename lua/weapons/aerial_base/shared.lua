@@ -28,7 +28,6 @@ end
 if SERVER then
     for _, fileName in ipairs(file.Find("weapons/aerial_base/server/*.lua", "LUA")) do
         local filePath = "server/"..fileName
-        AddCSLuaFile(filePath)
         include(filePath)
     end
 end

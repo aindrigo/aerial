@@ -18,7 +18,7 @@
 
 util.AddNetworkString("aerial.SyncAttachments")
 util.AddNetworkString("aerial.AddAttachment")
-util.AddNetworkString("aerial.RemoivAttachment")
+util.AddNetworkString("aerial.RemoveAttachment")
 
 net.Receive("aerial.SyncAttachments", function(_, ply)
     local ct = CurTime()
