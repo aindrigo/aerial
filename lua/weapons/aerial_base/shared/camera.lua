@@ -17,10 +17,18 @@
 ]]--
 
 function SWEP:CalculateFOV()
-    if istable(self.ADS) and isnumber(self.ADS.FOV) and self:GetADS() then
-        return self.ADS.FOV
+    local hookResult = self:FireHook("CalculateFOV")
+
+    local mod = 1
+    if hookResult ~= nil then
+        mod = mod * hookResult
     end
-    return 1
+
+    if istable(self.ADS) and isnumber(self.ADS.FOV) and self:GetADS() then
+        mod = mod * self.ADS.FOV
+    end
+
+    return mod
 end
 
 function SWEP:TranslateFOV(fov)

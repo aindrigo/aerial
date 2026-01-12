@@ -26,6 +26,11 @@ function SWEP:ResetMuzzleAttachment()
 end
 
 function SWEP:FindMuzzleAttachment()
+    local hookResult = self:FireHook("FindMuzzleAttachment")
+    if hookResult ~= nil then
+        return hookResult
+    end
+
     local vm = self:VM()
     local dummy = ClientsideModel(vm:GetModel(), RENDERGROUP_VIEWMODEL)
     dummy:Spawn()

@@ -17,10 +17,13 @@
 ]]--
 
 function SWEP:GiveAttachment(name)
+    self:FireHook("GiveAttachment", name)
     self:_AddAttachment(name)
 end
 
 function SWEP:TakeAttachment(name)
+    self:FireHook("TakeAttachment", name)
+
     local id = self:EntIndex()
     aerial.Attachments.Data[id] = aerial.Attachments.Data[id] or {}
     local data = self:_RemoveAttachment(name)

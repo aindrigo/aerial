@@ -17,6 +17,7 @@
 ]]--
 
 function SWEP:PlayAnimation(id)
+    self:FireHook("PlayAnimation", id)
     local vm = self:VM()
     local sequence = isstring(id) and vm:LookupSequence(id) or vm:SelectWeightedSequence(id)
 

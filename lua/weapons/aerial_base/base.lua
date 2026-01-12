@@ -91,7 +91,6 @@ function SWEP:Reset()
         self:ResetMuzzleAttachment()
         self.m_aLastEyeAng = nil
     end
-
 end
 
 function SWEP:Initialize()

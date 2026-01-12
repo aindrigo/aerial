@@ -86,7 +86,7 @@ function SWEP:ReloadAttack(id)
 end
 
 function SWEP:ReloadAttackTimer(id)
-    if self:FireHook("AttackReloadTimer", id) then return end
+    if self:FireHook("ReloadAttackTimer", id) then return end
 
     local data = self:GetAttackTable(id)
     local mode = data.ReloadMode or aerial.enums.RELOAD_MODE_NORMAL
