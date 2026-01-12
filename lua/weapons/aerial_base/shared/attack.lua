@@ -143,22 +143,7 @@ function SWEP:AttackCalculateSpread(id, attackData, index)
     local cone = Vector(spreadData.Cone, 0, spreadData.Cone)
     cone = cone * attackData.Recoil * (spreadData.RecoilMod or 1)
 
-    local mod = 1
-    if isnumber(spreadData.ADSMod) and self:GetADS() then
-        mod = mod * spreadData.ADSMod
-    end
-
-    if isnumber(spreadData.CrouchMod) and ply:Crouching() then
-        mod = mod * spreadData.CrouchMod
-    end
-
-    if isnumber(spreadData.AirMod) and not ply:IsOnGround() then
-        mod = mod * spreadData.AirMod
-    end
-
-    if isnumber(spreadData.VelocityMod) then
-        mod = mod + (self:GetOwnerSpeed() * spreadData.VelocityMod)
-    end
+    local mod = self:GetSpreadModifier(spreadData)
 
     cone:Mul(mod)
     cone = cone / 2

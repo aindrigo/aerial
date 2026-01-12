@@ -42,7 +42,6 @@ function SWEP:GetLastAttackTable()
     return self:GetAttackTable(self:GetLastAttackName())
 end
 
-
 function SWEP:GetOwnerSpeed(min, max)
     local ply = self:GetOwner()
 
@@ -51,4 +50,26 @@ function SWEP:GetOwnerSpeed(min, max)
 
     local vel = ply:GetVelocity()
     return math.Clamp(vel:Length2D() / ply:GetRunSpeed(), min, max)
+end
+
+function SWEP:_GetSpreadModifier(spreadData)
+    local ply = self:GetOwner()
+    local mod = 1
+    if isnumber(spreadData.ADSMod) and self:GetADS() then
+        mod = mod * spreadData.ADSMod
+    end
+
+    if isnumber(spreadData.CrouchMod) and ply:Crouching() then
+        mod = mod * spreadData.CrouchMod
+    end
+
+    if isnumber(spreadData.AirMod) and not ply:IsOnGround() then
+        mod = mod * spreadData.AirMod
+    end
+
+    if isnumber(spreadData.VelocityMod) then
+        mod = mod + (self:GetOwnerSpeed() * spreadData.VelocityMod)
+    end
+
+    return mod
 end

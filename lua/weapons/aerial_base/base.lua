@@ -91,6 +91,13 @@ function SWEP:Reset()
         self:ResetMuzzleAttachment()
         self.m_aLastEyeAng = nil
     end
+
+    local attachments = aerial.Attachments.Data[self:EntIndex()]
+    if istable(attachments) then
+        for name, data in pairs(attachments) do
+            self:_RefreshAttachmentOverrides(name)
+        end
+    end
 end
 
 function SWEP:Initialize()
@@ -115,6 +122,13 @@ function SWEP:OnReloaded()
     if CLIENT and istable(self.ADS) then
         self.ADS.MiddlePosition = nil
         self.ADS.MiddleAngles = nil
+    end
+
+    local attachments = aerial.Attachments.Data[self:EntIndex()]
+    if istable(attachments) then
+        for name, data in pairs(attachments) do
+            self:_RefreshAttachmentOverrides(name)
+        end
     end
 end
 

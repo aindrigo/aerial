@@ -47,12 +47,7 @@ function SWEP:_AddAttachment(name)
     aerial.Attachments.Data[id] = aerial.Attachments.Data[id] or {}
     aerial.Attachments.Data[id][name] = {}
 
-    local attachmentData = self.Attachments[name]
-    if istable(attachmentData.Overrides) then
-        for key, value in pairs(attachmentData.Overrides) do
-            self:_ApplyAttachmentOverrides(name, self, key, value)
-        end
-    end
+    self:_RefreshAttachmentOverrides(name)
 end
 
 function SWEP:_RemoveAttachment(name)
@@ -72,4 +67,13 @@ function SWEP:_RemoveAttachment(name)
 
 
     return data
+end
+
+function SWEP:_RefreshAttachmentOverrides(name)
+    local attachmentData = self.Attachments[name]
+    if istable(attachmentData.Overrides) then
+        for key, value in pairs(attachmentData.Overrides) do
+            self:_ApplyAttachmentOverrides(name, self, key, value)
+        end
+    end
 end
