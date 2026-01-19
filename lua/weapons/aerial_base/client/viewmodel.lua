@@ -145,7 +145,7 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     local rot = Angle(difference.p, difference.y, 0)
     rot.p = math.Clamp(rot.p * 0.3 * multiplier, -range, range)
     rot.y = math.Clamp(rot.y * 0.3 * multiplier, -range, range)
-    
+
     if rot.y >= 180 then
         rot.y = rot.y - 360
     elseif rot.y <= -180 then
