@@ -31,6 +31,13 @@ function SWEP:PlayAnimation(id)
     return vm:SequenceDuration(sequence)
 end
 
+function SWEP:GetAnimationDuration(id)
+    local vm = self:VM()
+    local sequence = isstring(id) and vm:LookupSequence(id) or vm:SelectWeightedSequence(id)
+
+    return vm:SequenceDuration(sequence)
+end
+
 function SWEP:QueueIdle()
     local vm = self:VM()
     local duration = vm:SequenceDuration() + 0.1

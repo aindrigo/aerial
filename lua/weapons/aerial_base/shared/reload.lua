@@ -78,13 +78,25 @@ function SWEP:ReloadAttack(id)
             reloadAnimation = data.EmptyReloadAnimation or normalReloadAnimation
         end
 
-        self:SetReloadStartTime(ct)
-        self:SetReloadTime(CurTime() + self:PlayAnimation(reloadAnimation))
+        local endTime = ct + self:PlayAnimation(reloadAnimation)
         self:QueueIdle()
+
+        self:SetReloadStartTime(ct)
+        self:SetReloadTime(endTime)
+        self:SetReloadEndTime(endTime)
     elseif reloadMode == aerial.enums.RELOAD_MODE_BULLET_BY_BULLET then
-        self:SetReloadStartTime(ct)
-        self:SetReloadTime(CurTime() + self:PlayAnimation(data.StartReloadAnimation or ACT_SHOTGUN_RELOAD_START))
+        local endTime = ct + self:PlayAnimation(data.StartReloadAnimation or ACT_SHOTGUN_RELOAD_START)
         self:QueueIdle()
+
+        self:SetReloadStartTime(ct)
+        self:SetReloadTime(endTime)
+
+        local bulletsToInsert = capacity - currentMagazine
+
+        endTime = endTime + self:GetAnimationDuration(data.InsertBulletAnimation or ACT_VM_RELOAD) * bulletsToInsert
+        endTime = endTime + self:GetAnimationDuration(data.FinishReloadAnimation or ACT_SHOTGUN_RELOAD_FINISH)
+
+        self:SetReloadEndTime(endTime)
     end
 end
 
