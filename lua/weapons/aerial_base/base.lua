@@ -91,6 +91,8 @@ function SWEP:Reset()
     if CLIENT then
         self:ResetMuzzleAttachment()
         self.m_aLastEyeAng = nil
+        self.m_vCurrentRecoilPosition = Vector()
+        self.m_aCurrentRecoilAngles = Angle()
     end
 
     local attachments = aerial.Attachments.Data[self:EntIndex()]

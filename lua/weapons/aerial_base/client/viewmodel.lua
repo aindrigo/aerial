@@ -210,11 +210,10 @@ function SWEP:VMCustomRecoil(ct, ft, muzzle, matrix)
     smoothPosition = aerial.math.Lerp(ft * 48, smoothPosition, currentPosition)
     smoothAngles = aerial.math.Lerp(ft * 48, smoothAngles, currentAngles)
 
-    if smoothPosition == vector_origin and smoothAngles == angle_zero then return end
-
     self.m_vCurrentRecoilPosition = smoothPosition
     self.m_aCurrentRecoilAngles = smoothAngles
 
+    if smoothPosition == vector_origin and smoothAngles == angle_zero then return end
 
     matrix:Translate(smoothPosition)
 

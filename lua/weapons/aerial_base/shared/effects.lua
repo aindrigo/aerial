@@ -29,8 +29,6 @@ function SWEP:AttackEffects(id, attackData)
     local customRecoil = data.CustomRecoil or {}
     if (self:GetADS() and not data.ShootAnimationADS) or customRecoil.Always then
         if customRecoil.UseShootAnimation or customRecoil.Disabled then
-            print("You do it to yourself, you do")
-
             self:PlayAnimation(data.ShootAnimation)
             self:QueueIdle()
         end
@@ -39,7 +37,8 @@ function SWEP:AttackEffects(id, attackData)
             self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
 
             local force = customRecoil.Force or attackData.Damage / 6
-    
+            local yaw = util.SharedRandom("ARCRY", (customRecoil.MinYaw or -0.6), (customRecoil.MaxYaw or 0.6))
+
             self:SetCustomRecoilTargetPosition(Vector(-force, 0, 0))
             self:SetCustomRecoilTargetAngles(Angle(-force, 0, 0))
         end

@@ -46,7 +46,6 @@ function SWEP:ThinkAttack(id, key)
     local magazineCount = self:GetAttackMagazineCount(id)
     local fireMode = self:GetAttackFireModeEnum(id)
 
-    print(fireMode)
     if magazineCount > 0 and fireMode == aerial.enums.FIRE_MODE_AUTOMATIC then
         if ply:KeyDown(key) then
             self:Attack(id)
@@ -129,7 +128,6 @@ function SWEP:ThinkCustomRecoil()
         mode = aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING
         targetPosition = Vector()
         targetAngles = Angle()
-
 
         self:SetCustomRecoilMode(mode)
         self:SetCustomRecoilTargetPosition(targetPosition)
