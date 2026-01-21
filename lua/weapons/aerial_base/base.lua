@@ -67,6 +67,10 @@ SWEP.ADS = {}
 SWEP.Bob = {}
 SWEP.Sway = {}
 
+SWEP.VMSettings = {}
+SWEP.WMSettings = {}
+
+
 function SWEP:Reset()
     self:FireHook("Reset")
     self:SetHoldType(self.HoldType or "revolver")
@@ -140,6 +144,7 @@ function SWEP:SetupDataTables()
 
     self:NetworkVar("Float", "IdleTime")
     self:NetworkVar("Float", "ReloadTime")
+    self:NetworkVar("Float", "ReloadStartTime")
     self:NetworkVar("Float", "FireModeTime")
     self:NetworkVar("Int", "PrimaryFireMode")
     self:NetworkVar("Int", "SecondaryFireMode")

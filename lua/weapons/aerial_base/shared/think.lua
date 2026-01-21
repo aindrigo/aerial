@@ -23,6 +23,7 @@ function SWEP:Think()
     self:ThinkReload()
     self:ThinkRecoil()
     self:ThinkCustomRecoil()
+    self:ThinkFireMode()
 end
 
 function SWEP:ThinkAttacks()
@@ -142,4 +143,12 @@ function SWEP:ThinkCustomRecoil()
 
     self:SetCustomRecoilPosition(currentPosition)
     self:SetCustomRecoilAngles(currentAngles)
+end
+
+function SWEP:ThinkFireMode()
+    local ct = CurTime()
+    local nextFire = self:GetFireModeTime()
+
+    if nextFire <= 0 or nextFire > ct then return end
+    self:SetFireModeTime(0)
 end

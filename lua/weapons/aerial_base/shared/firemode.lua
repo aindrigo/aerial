@@ -36,6 +36,9 @@ end
 
 
 function SWEP:ToggleFireMode()
+    local ct = CurTime()
+    if self:GetFireModeTime() > ct then return end
+
     local id = self:GetLastAttackName()
     local data = self:GetAttackTable(id)
     
@@ -52,6 +55,7 @@ function SWEP:ToggleFireMode()
     self:SetAttackFireMode(id, nextMode)
     if not data.NoFireModeAnimation then
         local duration = self:PlayAnimation(data.FireModeAnimation or ACT_VM_FIREMODE)
-        self:SetFireModeTime(CurTime() + duration)
+        self:QueueIdle()
+        self:SetFireModeTime(ct + duration)
     end
 end

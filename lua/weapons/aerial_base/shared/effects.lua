@@ -37,7 +37,7 @@ function SWEP:AttackEffects(id, attackData)
             self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
 
             local force = customRecoil.Force or attackData.Damage / 6
-            local yaw = util.SharedRandom("ARCRY", (customRecoil.MinYaw or -0.6), (customRecoil.MaxYaw or 0.6))
+            local yaw = util.SharedRandom("ARCRY", (customRecoil.MinYaw or -2), (customRecoil.MaxYaw or 2))
 
             self:SetCustomRecoilTargetPosition(Vector(-force, 0, 0))
             self:SetCustomRecoilTargetAngles(Angle(-force, 0, 0))

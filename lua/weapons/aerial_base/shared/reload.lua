@@ -32,8 +32,7 @@ function SWEP:CanReload()
         end
     end
 
-    local reloadTime = self:GetReloadTime()
-    return not self:GetReloading() and ct >= reloadTime
+    return not self:GetReloading() and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime()
 end
 
 function SWEP:Reload()
@@ -56,6 +55,8 @@ end
 function SWEP:ReloadAttack(id)
     if self:FireHook("ReloadAttack", id) or not self:CanReloadAttack(id) then return end
 
+    local ct = CurTime()
+
     local ply = self:GetOwner()
     ply:DoReloadEvent()
 
@@ -77,9 +78,11 @@ function SWEP:ReloadAttack(id)
             reloadAnimation = data.EmptyReloadAnimation or normalReloadAnimation
         end
 
+        self:SetReloadStartTime(ct)
         self:SetReloadTime(CurTime() + self:PlayAnimation(reloadAnimation))
         self:QueueIdle()
     elseif reloadMode == aerial.enums.RELOAD_MODE_BULLET_BY_BULLET then
+        self:SetReloadStartTime(ct)
         self:SetReloadTime(CurTime() + self:PlayAnimation(data.StartReloadAnimation or ACT_SHOTGUN_RELOAD_START))
         self:QueueIdle()
     end
@@ -109,6 +112,7 @@ function SWEP:ReloadAttackTimer(id)
         ply:SetAmmo(reserve - difference, data.Ammo)
 
         self:SetAttackMagazineCount(id, target)
+        self:SetReloadStartTime(0)
         self:SetReloadTime(0)
         self:SetReloadName("")
         self:SetReloading(false)
@@ -117,6 +121,7 @@ function SWEP:ReloadAttackTimer(id)
 
         if currentMagazine == capacity or reserve == 0 then
             if self:GetReloadFinished() then
+                self:SetReloadStartTime(0)
                 self:SetReloadTime(0)
                 self:SetReloadName("")
                 self:SetReloadFinished(false)

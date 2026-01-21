@@ -16,24 +16,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:CalculateFOV()
-    local hookResult = self:FireHook("CalculateFOV")
+function SWEP:CalcView(ply, position, angles, fov)
+    if not self:GetReloading() then return end
+    local muzzleOrigin = self:GetMuzzleAttachment()
+    local realMuzzle = self:GetRealMuzzleAttachment()
 
-    local mod = 1
-    if hookResult ~= nil then
-        mod = mod * hookResult
-    end
+    local ct = CurTime()
+    local startTime = self:GetReloadStartTime()
+    local endTime = self:GetReloadTime()
 
-    if istable(self.ADS) and isnumber(self.ADS.FOV) and self:GetADS() then
-        mod = mod * self.ADS.FOV
-    end
+    local fraction = math.TimeFraction(startTime, endTime, ct)
 
-    return mod
-end
+    local muzzleDifference = realMuzzle.Pos - muzzleOrigin.Pos
+    muzzleDifference:Mul(math.sin(math.pi * fraction))
 
-function SWEP:TranslateFOV(fov)
-    local multiplier = self:CalculateFOV()
-    self.m_fFOVMultiplier = Lerp(FrameTime() * 2, self.m_fFOVMultiplier or multiplier, multiplier)
+    angles:RotateAroundAxis(angles:Up(), muzzleDifference.y)
+    angles:RotateAroundAxis(angles:Right(), -muzzleDifference.z)
 
-    return fov * self.m_fFOVMultiplier
+    return position, angles, fov
 end
