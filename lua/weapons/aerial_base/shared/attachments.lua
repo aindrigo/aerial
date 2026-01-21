@@ -65,7 +65,6 @@ function SWEP:_RemoveAttachment(name)
     local data = aerial.Attachments.Data[id][name]
     aerial.Attachments.Data[id][name] = nil
 
-
     return data
 end
 

@@ -47,10 +47,10 @@ SWEP.Primary.DefaultClip = 12
 SWEP.Primary.MuzzleFlashColor = Color(201, 165, 112)
 
 -- Fire modes
-SWEP.Primary.FireModes = {
-    [0] = aerial.enums.FIRE_MODE_AUTOMATIC, -- 0 is default
-    [1] = aerial.enums.FIRE_MODE_SEMIAUTOMATIC
-}
+-- SWEP.Primary.FireModes = {
+--     [0] = aerial.enums.FIRE_MODE_AUTOMATIC, -- 0 is default
+--     [1] = aerial.enums.FIRE_MODE_SEMIAUTOMATIC
+-- }
 
 -- Secondary, disabled
 SWEP.Secondary.ID = "Secondary"
@@ -73,6 +73,7 @@ function SWEP:Reset()
 
     self:SetIdleTime(0)
     self:SetReloadTime(0)
+    self:SetFireModeTime(0)
     self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING)
     self:SetADS(false)
     self:SetReloading(false)
@@ -137,6 +138,7 @@ function SWEP:SetupDataTables()
 
     self:NetworkVar("Float", "IdleTime")
     self:NetworkVar("Float", "ReloadTime")
+    self:NetworkVar("Float", "FireModeTime")
     self:NetworkVar("Int", "PrimaryFireMode")
     self:NetworkVar("Int", "SecondaryFireMode")
     self:NetworkVar("Int", "CustomRecoilMode")

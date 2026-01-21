@@ -46,7 +46,7 @@ function SWEP:ThinkAttack(id, key)
     local magazineCount = self:GetAttackMagazineCount(id)
     local fireMode = self:GetAttackFireModeEnum(id)
 
-    --print(fireMode)
+    print(fireMode)
     if magazineCount > 0 and fireMode == aerial.enums.FIRE_MODE_AUTOMATIC then
         if ply:KeyDown(key) then
             self:Attack(id)

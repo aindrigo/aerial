@@ -36,7 +36,7 @@ function SWEP:CanAttack(id)
     if self:FireHook("CanAttack", id) == false then return false end
 
     local ct = CurTime()
-    return ct >= self:GetNextAttack(id) and ct >= self:GetReloadTime()
+    return ct >= self:GetNextAttack(id) and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime()
 end
 
 function SWEP:Attack(id)
