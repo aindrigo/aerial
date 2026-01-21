@@ -61,6 +61,7 @@ function SWEP:VMViewBob(ct, ft, moveSpeed, muzzle, matrix)
 
     local bobFrequency = 1
     local bobAmplitude = speed * 2
+    local backMultiplier = 1
 
     if isnumber(bobTable.AmplitudeMultiplier) then
         bobAmplitude = bobAmplitude * bobTable.AmplitudeMultiplier
@@ -70,9 +71,17 @@ function SWEP:VMViewBob(ct, ft, moveSpeed, muzzle, matrix)
         bobFrequency = bobFrequency * bobTable.FrequencyMultiplier
     end
 
+    if self:GetADS() then
+        local adsAmplitudeMultiplier = bobTable.ADSAmplitudeMultiplier or 0.5
+        if isnumber(adsAmplitudeMultiplier) then
+            bobAmplitude = bobAmplitude * adsAmplitudeMultiplier
+            backMultiplier = backMultiplier * adsAmplitudeMultiplier
+        end
+    end
+
     local calculatedPosition = Vector(0, 0, 0)
-    calculatedPosition.x = -speed * 1.5
-    calculatedPosition.z = -speed * 0.75
+    calculatedPosition.x = -speed * 1.5 * backMultiplier
+    calculatedPosition.z = -speed * 0.75 * backMultiplier
 
     local calculatedAngles = Angle(0, 0, 0)
     local t = time * -2.1
@@ -143,6 +152,13 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
 
     local range = 30
     local multiplier = swayTable.Multiplier or 1
+
+    if self:GetADS() then
+        local adsMultiplier = swayTable.ADSMultiplier or 0.6
+        if isnumber(adsMultiplier) then
+            multiplier = multiplier * adsMultiplier
+        end
+    end
 
     local rot = Angle(difference.p, difference.y, 0)
     rot.p = math.Clamp(rot.p * 0.3 * multiplier, -range, range)
