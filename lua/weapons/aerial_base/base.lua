@@ -35,7 +35,6 @@ SWEP.SlotPos = 1
 
 SWEP.Primary.ID = "Primary"
 SWEP.Primary.Sound = Sound("Weapon_Pistol.Single")
-SWEP.Primary.EmptySound = Sound("Weapon_Pistol.Empty")
 
 SWEP.Primary.Delay = 0.13
 SWEP.Primary.ShootAnimation = ACT_VM_PRIMARYATTACK

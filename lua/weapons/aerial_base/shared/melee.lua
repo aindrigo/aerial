@@ -18,21 +18,18 @@
 
 function SWEP:AttackMelee(id)
     if self:FireHook("AttackMelee", id) then return end
-
     local data = self:GetAttackTable(id)
 
-    if isstring(data.StartSound) then
-        self:EmitSound(data.StartSound)
-    end
+    self:AttackMeleePreEffects(id)
 
-    if not isnumber(data.HitDelay) or data.HitDelay <= 0 then
+    if not isnumber(data.StartDelay) or data.StartDelay <= 0 then
         local attackData = self:BuildAttackData(id)
         self:AttackMeleePerform(id, attackData)
         return
     end
 
     local ct = CurTime()
-    self:SetCurrentAttackTime(ct + data.HitDelay)
+    self:SetCurrentAttackTime(ct + data.StartDelay)
     self:SetCurrentAttackName(id)
 end
 
@@ -104,13 +101,23 @@ function SWEP:AttackMeleeTrace(id, attackData, index)
     return util.TraceHull(traceData)
 end
 
-function SWEP:AttackMeleeEffects(id, attackData)
-    if self:FireHook("AttackMeleeEffects", id, attackData) then return end
+function SWEP:AttackMeleePreEffects(id)
+    if self:FireHook("AttackMeleePreEffects", id, attackData) then return end
+    local ply = self:GetOwner()
+
+    ply:SetAnimation(PLAYER_ATTACK1)
     local data = self:GetAttackTable(id)
 
-    local ply = attackData.Attacker
-    ply:SetAnimation(PLAYER_ATTACK1)
+    if isstring(data.StartSound) then
+        self:EmitSound(data.StartSound)
+    end
 
-    self:PlayAnimation(attackData.SwingAnimation or data.SwingAnimation or ACT_VM_PRIMARYATTACK)
-    self:QueueIdle()
+    if data.StartAnimation ~= false then
+        self:PlayAnimation(data.StartAnimation or ACT_VM_MISSCENTER)
+        self:QueueIdle()
+    end
+end
+
+function SWEP:AttackMeleeEffects(id, attackData)
+    if self:FireHook("AttackMeleeEffects", id, attackData) then return end    
 end

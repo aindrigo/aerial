@@ -17,8 +17,20 @@
 ]]--
 
 function SWEP:AttackProjectile(id)
-    local attackData = self:BuildAttackData(id)
-    self:AttackProjectilePerform(id, attackData)
+    if self:FireHook("AttackProjectile", id) then return end
+    local data = self:GetAttackTable(id)
+
+    self:AttackProjectilePreEffects(id)
+
+    if not isnumber(data.StartDelay) or data.StartDelay <= 0 then
+        local attackData = self:BuildAttackData(id)
+        self:AttackProjectilePerform(id, attackData)
+        return
+    end
+
+    local ct = CurTime()
+    self:SetCurrentAttackTime(ct + data.StartDelay)
+    self:SetCurrentAttackName(id)
 end
 
 function SWEP:AttackProjectilePerform(id, attackData)
@@ -115,6 +127,15 @@ function SWEP:AttackProjectileTrace(id, attackData, index)
     end
 
     return traceResult
+end
+
+function SWEP:AttackProjectilePreEffects(id)
+    if self:FireHook("AttackProjectilePreEffects", id, attackData) then return end
+
+    local data = self:GetAttackTable(id)
+    if isstring(data.StartSound) then
+        self:EmitSound(data.StartSound)
+    end
 end
 
 function SWEP:AttackProjectileEffects(id, attackData)
