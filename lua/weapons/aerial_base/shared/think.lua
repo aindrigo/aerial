@@ -40,7 +40,7 @@ function SWEP:ThinkAttack(id, key)
     local ply = self:GetOwner()
     local data = self:GetAttackTable(id)
 
-    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_PROJECTILE
+    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
     if attackType == aerial.enums.ATTACK_TYPE_NONE then return end
     if istable(self.ADS) and self.ADS.Enabled ~= false and (self.ADS.Key or IN_ATTACK2) == key then
         aerial.dprint("Warning: conflicting keys for ironsights and attack "..id)
@@ -48,7 +48,7 @@ function SWEP:ThinkAttack(id, key)
     
 
     local empty = false
-    if attackType == aerial.enums.ATTACK_TYPE_PROJECTILE then
+    if attackType == aerial.enums.ATTACK_TYPE_BULLET then
         empty = self:GetAttackMagazineCount(id) < 1
     end
 
@@ -163,7 +163,7 @@ function SWEP:ThinkCurrentAttack()
     if attackTime > ct or attackName == "" then return end
 
     local data = self:GetAttackTable(attackName)
-    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_PROJECTILE
+    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
 
     local attackData = self:BuildAttackData(attackName)
 
@@ -172,7 +172,7 @@ function SWEP:ThinkCurrentAttack()
 
     if attackType == aerial.enums.ATTACK_TYPE_MELEE then
         self:AttackMeleePerform(attackName, attackData)
-    elseif attackType == aerial.enums.ATTACK_TYPE_PROJECTILE then
-        self:AttackProjectilePerform(attackName, attackData)
+    elseif attackType == aerial.enums.ATTACK_TYPE_BULLET then
+        self:AttackBulletPerform(attackName, attackData)
     end    
 end

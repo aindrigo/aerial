@@ -16,15 +16,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:AttackProjectile(id)
-    if self:FireHook("AttackProjectile", id) then return end
+function SWEP:AttackBullet(id)
+    if self:FireHook("AttackBullet", id) then return end
     local data = self:GetAttackTable(id)
 
-    self:AttackProjectilePreEffects(id)
+    self:AttackBulletPreEffects(id)
 
     if not isnumber(data.StartDelay) or data.StartDelay <= 0 then
         local attackData = self:BuildAttackData(id)
-        self:AttackProjectilePerform(id, attackData)
+        self:AttackBulletPerform(id, attackData)
         return
     end
 
@@ -33,8 +33,8 @@ function SWEP:AttackProjectile(id)
     self:SetCurrentAttackName(id)
 end
 
-function SWEP:AttackProjectilePerform(id, attackData)
-    if self:FireHook("AttackProjectilePerform", id, attackData) then return end
+function SWEP:AttackBulletPerform(id, attackData)
+    if self:FireHook("AttackBulletPerform", id, attackData) then return end
 
     local ply = attackData.Attacker
     local data = self:GetAttackTable(id)
@@ -68,6 +68,7 @@ function SWEP:AttackProjectilePerform(id, attackData)
 
     attackData.Delay = delay
     attackData.Damage = data.Damage
+    attackData.DamageType = attackData.DamageType or data.DamageType or DMG_BULLET
     attackData.Recoil = self:AttackCalculateRecoil(id, attackData)
     attackData.Traces = {}
 
@@ -75,7 +76,7 @@ function SWEP:AttackProjectilePerform(id, attackData)
 
     ply:LagCompensation(true)
     for i = 1, (data.ShotCount or 1) do
-        local traceResult = self:AttackProjectileTrace(id, attackData, i)
+        local traceResult = self:AttackBulletTrace(id, attackData, i)
 
         if traceResult.Hit and IsValid(traceResult.Entity) then
             self:AttackHitEntity(id, attackData, traceResult)
@@ -85,14 +86,14 @@ function SWEP:AttackProjectilePerform(id, attackData)
     end
     ply:LagCompensation(false)
 
-    self:AttackProjectileEffects(id, attackData)
+    self:AttackBulletEffects(id, attackData)
 
     self.m_tLastAttacks = self.m_tLastAttacks or {}
     self.m_tLastAttacks[id] = attackData
 end
 
-function SWEP:AttackProjectileTrace(id, attackData, index)
-    local hookResult = self:FireHook("AttackProjectileTrace", id, attackData, index)
+function SWEP:AttackBulletTrace(id, attackData, index)
+    local hookResult = self:FireHook("AttackBulletTrace", id, attackData, index)
     if istable(hookResult) then
         return hookResult
     end
@@ -129,8 +130,8 @@ function SWEP:AttackProjectileTrace(id, attackData, index)
     return traceResult
 end
 
-function SWEP:AttackProjectilePreEffects(id)
-    if self:FireHook("AttackProjectilePreEffects", id, attackData) then return end
+function SWEP:AttackBulletPreEffects(id)
+    if self:FireHook("AttackBulletPreEffects", id, attackData) then return end
 
     local data = self:GetAttackTable(id)
     if isstring(data.StartSound) then
@@ -138,8 +139,8 @@ function SWEP:AttackProjectilePreEffects(id)
     end
 end
 
-function SWEP:AttackProjectileEffects(id, attackData)
-    if self:FireHook("AttackProjectileEffects", id, attackData) then return end
+function SWEP:AttackBulletEffects(id, attackData)
+    if self:FireHook("AttackBulletEffects", id, attackData) then return end
 
     local data = self:GetAttackTable(id)
 
@@ -171,7 +172,6 @@ function SWEP:AttackProjectileEffects(id, attackData)
 
 
     for _, traceResult in ipairs(attackData.Traces) do
-        -- Bullet hole
         if not traceResult.Hit or not (game.SinglePlayer() or IsFirstTimePredicted()) then continue end
         local impactEffect = EffectData()
         impactEffect:SetOrigin(traceResult.HitPos)
@@ -179,7 +179,7 @@ function SWEP:AttackProjectileEffects(id, attackData)
         impactEffect:SetSurfaceProp(traceResult.SurfaceProps)
         impactEffect:SetEntity(traceResult.Entity)
         impactEffect:SetHitBox(traceResult.HitBoxBone or 0)
-        impactEffect:SetDamageType(DMG_BULLET)
+        impactEffect:SetDamageType(attackData.DamageType)
 
         util.Effect("Impact", impactEffect, true, false)
     end

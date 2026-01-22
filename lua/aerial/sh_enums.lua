@@ -19,7 +19,7 @@
 aerial.enums = aerial.enums or {}
 
 aerial.enums.ATTACK_TYPE_NONE = 0
-aerial.enums.ATTACK_TYPE_PROJECTILE = 1
+aerial.enums.ATTACK_TYPE_BULLET = 1
 aerial.enums.ATTACK_TYPE_MELEE = 2
 
 aerial.enums.RELOAD_MODE_NORMAL = 0

@@ -17,6 +17,11 @@
 ]]--
 
 function SWEP:DrawWorldModel(flags)
+    if not istable(self.WM) or not istable(self.WM.Offset) or not (isvector(self.WM.Offset.Position) and not isangle(self.WM.Offset.Angles)) then
+        self:DrawModel(flags)
+        return
+    end
+
     local wm = self.m_eWorldModel
     if not IsValid(wm) then
         wm = ClientsideModel(self.WorldModel)

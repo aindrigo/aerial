@@ -43,6 +43,7 @@ function SWEP:AttackMeleePerform(id, attackData)
     attackData.Traces = {}
     attackData.Delay = attackData.Delay or data.Delay or 0
     attackData.Range = attackData.Range or data.Range or 70
+    attackData.DamageType = attackData.DamageType or data.DamageType or DMG_CLUB
 
     self:SetNextAttack(id, ct + attackData.Delay)
 
@@ -119,5 +120,29 @@ function SWEP:AttackMeleePreEffects(id)
 end
 
 function SWEP:AttackMeleeEffects(id, attackData)
-    if self:FireHook("AttackMeleeEffects", id, attackData) then return end    
+    if self:FireHook("AttackMeleeEffects", id, attackData) then return end
+
+    local data = self:GetAttackTable(id)
+    local hitWorld = false
+
+    for _, traceResult in ipairs(attackData.Traces) do
+        if not traceResult.Hit or not (game.SinglePlayer() or IsFirstTimePredicted()) then continue end
+        if traceResult.HitWorld and not hitWorld then
+            hitWorld = true
+        end
+
+        local impactEffect = EffectData()
+        impactEffect:SetOrigin(traceResult.HitPos)
+        impactEffect:SetStart(traceResult.StartPos)
+        impactEffect:SetSurfaceProp(traceResult.SurfaceProps)
+        impactEffect:SetEntity(traceResult.Entity)
+        impactEffect:SetHitBox(traceResult.HitBoxBone or 0)
+        impactEffect:SetDamageType(attackData.DamageType)
+
+        util.Effect("Impact", impactEffect, true, false)
+    end
+
+    if isstring(data.ImpactSound) and (data.ImpactSoundWorldOnly and hitWorld or not data.ImpactSoundWorldOnly) then
+        self:EmitSound(data.ImpactSound)
+    end
 end

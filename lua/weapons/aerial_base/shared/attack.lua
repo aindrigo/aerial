@@ -41,7 +41,7 @@ end
 
 function SWEP:BuildAttackData(id)
     local data = self:GetAttackTable(id)
-    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_PROJECTILE
+    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
 
     local ply = self:GetOwner()
 
@@ -61,9 +61,9 @@ function SWEP:Attack(id)
     self:SetLastAttackName(id)
 
     local data = self:GetAttackTable(id)
-    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_PROJECTILE
-    if attackType == aerial.enums.ATTACK_TYPE_PROJECTILE then
-        self:AttackProjectile(id)
+    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
+    if attackType == aerial.enums.ATTACK_TYPE_BULLET then
+        self:AttackBullet(id)
     elseif attackType == aerial.enums.ATTACK_TYPE_MELEE then
         self:AttackMelee(id)
     end
