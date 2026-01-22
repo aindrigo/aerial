@@ -32,12 +32,12 @@ function SWEP:CanReload()
         end
     end
 
-    return not self:GetReloading() and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime()
+    return not self:GetReloading() and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime() and ct > self:GetCurrentAttackTime()
 end
 
 function SWEP:Reload()
     if self:FireHook("Reload") or not self:CanReload() then return end
-    self:ReloadAttack("Primary")
+    self:ReloadAttack(self:GetLastAttackName())
 end
 
 function SWEP:CanReloadAttack(id)

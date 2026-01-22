@@ -134,7 +134,6 @@ end
 function SWEP:VMDrawReticule(name, data, vm, model, modelMatrix, reticuleData)
     local matrix = Matrix(modelMatrix)
 
-    
     if isvector(reticuleData.Position) then
         matrix:Translate(reticuleData.Position)
     end
@@ -154,11 +153,4 @@ function SWEP:VMDrawReticule(name, data, vm, model, modelMatrix, reticuleData)
         reticuleData.Color or color_white,
         rotation.r - 180
     )
-end
-
-function SWEP:ViewModelDrawn(vm, flags)
-    local attachments = aerial.Attachments.Data[self:EntIndex()] or {}
-    for name, data in pairs(attachments) do
-        self:VMDrawAttachment(name, data, vm, flags)
-    end
 end

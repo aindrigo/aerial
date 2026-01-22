@@ -16,56 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:AttackEffects(id, attackData)
-    if self:FireHook("AttackEffects", id, attackData) then return end
-
-    local data = self:GetAttackTable(id)
-
-    local ply = attackData.Attacker
-    ply:SetAnimation(PLAYER_ATTACK1)
-
-    self:EmitSound(data.Sound, SNDLVL_GUNFIRE)
-
-    local customRecoil = data.CustomRecoil or {}
-    if (self:GetADS() and not data.ShootAnimationADS) or customRecoil.Always then
-        if customRecoil.UseShootAnimation or customRecoil.Disabled then
-            self:PlayAnimation(data.ShootAnimation)
-            self:QueueIdle()
-        end
-
-        if not customRecoil.Disabled then
-            self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
-
-            local force = customRecoil.Force or attackData.Damage / 6
-            local yaw = util.SharedRandom("ARCRY", (customRecoil.MinYaw or -2), (customRecoil.MaxYaw or 2))
-
-            self:SetCustomRecoilTargetPosition(Vector(-force, 0, 0))
-            self:SetCustomRecoilTargetAngles(Angle(-force, 0, 0))
-        end
-    else
-        self:PlayAnimation(data.ShootAnimation)
-        self:QueueIdle()
-    end
-
-
-    for _, traceResult in ipairs(attackData.Traces) do
-        -- Bullet hole
-        if not traceResult.Hit or not (game.SinglePlayer() or IsFirstTimePredicted()) then continue end
-        local impactEffect = EffectData()
-        impactEffect:SetOrigin(traceResult.HitPos)
-        impactEffect:SetStart(traceResult.StartPos)
-        impactEffect:SetSurfaceProp(traceResult.SurfaceProps)
-        impactEffect:SetEntity(traceResult.Entity)
-        impactEffect:SetHitBox(traceResult.HitBoxBone or 0)
-        impactEffect:SetDamageType(DMG_BULLET)
-
-        util.Effect("Impact", impactEffect, true, false)
-    end
-
-    self:AttackEffectMuzzleFlash(id, attackData)
-    self:AttackEffectRecoil(id, attackData)
-end
-
 local flashes = {
     "muzzleflash_1",
     "muzzleflash_3",

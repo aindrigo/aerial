@@ -237,3 +237,17 @@ function SWEP:VMCustomRecoil(ct, ft, muzzle, matrix)
     matrix:Rotate(smoothAngles)
     matrix:Translate(-muzzle.Pos)
 end
+
+function SWEP:ViewModelDrawn(vm, flags)
+    local attachments = aerial.Attachments.Data[self:EntIndex()] or {}
+    for name, data in pairs(attachments) do
+        self:VMDrawAttachment(name, data, vm, flags)
+    end
+
+    -- local vmSettings = self.VMSettings or {}
+    -- if istable(vmSettings.Elements) then
+    --     for _, data in ipairs(vmSettings.Elements) do
+            
+    --     end
+    -- end
+end

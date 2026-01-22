@@ -17,6 +17,10 @@
 ]]--
 
 function SWEP:CanADS()
+    if istable(self.ADS) and self.ADS.Enabled == false then
+        return false
+    end
+
     local ct = CurTime()
     return not self:GetReloading() and ct >= self:GetReloadTime()
 end

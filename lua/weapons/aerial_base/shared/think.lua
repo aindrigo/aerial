@@ -24,6 +24,7 @@ function SWEP:Think()
     self:ThinkRecoil()
     self:ThinkCustomRecoil()
     self:ThinkFireMode()
+    self:ThinkCurrentAttack()
 end
 
 function SWEP:ThinkAttacks()
@@ -39,22 +40,23 @@ function SWEP:ThinkAttack(id, key)
     local ply = self:GetOwner()
     local data = self:GetAttackTable(id)
 
-    if data.Ammo == "none" then return end
-    if istable(self.ADS) and (self.ADS.Key or IN_ATTACK2) == key then
+    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_PROJECTILE
+    if attackType == aerial.enums.ATTACK_TYPE_NONE then return end
+    if istable(self.ADS) and self.ADS.Enabled ~= false and (self.ADS.Key or IN_ATTACK2) == key then
         aerial.dprint("Warning: conflicting keys for ironsights and attack "..id)
     end
     
-    local magazineCount = self:GetAttackMagazineCount(id)
-    local fireMode = self:GetAttackFireModeEnum(id)
 
-    if magazineCount > 0 and fireMode == aerial.enums.FIRE_MODE_AUTOMATIC then
-        if ply:KeyDown(key) then
-            self:Attack(id)
-        end
-    elseif magazineCount < 1 or fireMode == aerial.enums.FIRE_MODE_SEMIAUTOMATIC then
-        if ply:KeyPressed(key) then
-            self:Attack(id)
-        end
+    local empty = false
+    if attackType == aerial.enums.ATTACK_TYPE_PROJECTILE then
+        empty = self:GetAttackMagazineCount(id) < 1
+    end
+
+    if ply:KeyPressed(key) then
+        self:Attack(id)
+    elseif (not ply:KeyDown(key) or empty) and self:GetCurrentAttackName() == id then
+        self:SetCurrentAttackTime(0)
+        self:SetCurrentAttackName("")
     end
 end
 
@@ -151,4 +153,26 @@ function SWEP:ThinkFireMode()
 
     if nextFire <= 0 or nextFire > ct then return end
     self:SetFireModeTime(0)
+end
+
+function SWEP:ThinkCurrentAttack()
+    local attackTime = self:GetCurrentAttackTime()
+    local attackName = self:GetCurrentAttackName()
+
+    local ct = CurTime()
+    if attackTime > ct or attackName == "" then return end
+
+    local data = self:GetAttackTable(attackName)
+    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_PROJECTILE
+
+    local attackData = self:BuildAttackData(attackName)
+
+    self:SetCurrentAttackTime(0)
+    self:SetCurrentAttackName("")
+
+    if attackType == aerial.enums.ATTACK_TYPE_MELEE then
+        self:AttackMeleePerform(attackName, attackData)
+    elseif attackType == aerial.enums.ATTACK_TYPE_PROJECTILE then
+        self:AttackProjectilePerform(attackName, attackData)
+    end    
 end
