@@ -45,7 +45,16 @@ function SWEP:AttackMeleePerform(id, attackData)
     attackData.Range = attackData.Range or data.Range or 70
     attackData.DamageType = attackData.DamageType or data.DamageType or DMG_CLUB
 
-    self:SetNextAttack(id, ct + attackData.Delay)
+    local attackTime = ct
+    local chargeData = data.Charge
+
+    if not istable(chargeData) or chargeData.Enabled == false then
+        attackTime = attackTime + attackData.Delay
+        self:SetNextAttack(id, attackTime)
+    else
+        self:SetCurrentAttackName("")
+        self:SetCurrentAttackTime(0)
+    end
 
     ply:LagCompensation(true)
     for i = 1, (data.HitCount or 1) do
@@ -58,6 +67,7 @@ function SWEP:AttackMeleePerform(id, attackData)
     end
     ply:LagCompensation(false)
 
+    self:AttackTakeAmmo(id, 1)
     self:AttackMeleeEffects(id, attackData)
 end
 

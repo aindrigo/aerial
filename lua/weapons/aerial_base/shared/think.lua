@@ -17,46 +17,45 @@
 ]]--
 
 function SWEP:Think()
+    self:ThinkIdle()
     self:ThinkAttacks()
     self:ThinkADS()
-    self:ThinkIdle()
     self:ThinkReload()
     self:ThinkRecoil()
     self:ThinkCustomRecoil()
     self:ThinkFireMode()
-    self:ThinkCurrentAttack()
+    self:ThinkFlags()
 end
 
 function SWEP:ThinkAttacks()
     local ply = self:GetOwner()
 
-    self:ThinkAttack("Primary", IN_ATTACK)
-    self:ThinkAttack("Secondary", IN_ATTACK2)
+    self:ThinkAttack("Primary", self:GetAttackKey("Primary"))
+    self:ThinkAttack("Secondary", self:GetAttackKey("Secondary"))
+    self:ThinkCurrentAttack()
 end
 
 function SWEP:ThinkAttack(id, key)
-    if not self:CanAttack(id) then return end
-
     local ply = self:GetOwner()
     local data = self:GetAttackTable(id)
 
     local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
     if attackType == aerial.enums.ATTACK_TYPE_NONE then return end
+
     if istable(self.ADS) and self.ADS.Enabled ~= false and (self.ADS.Key or IN_ATTACK2) == key then
         aerial.dprint("Warning: conflicting keys for ironsights and attack "..id)
     end
-    
 
-    local empty = false
-    if attackType == aerial.enums.ATTACK_TYPE_BULLET then
-        empty = self:GetAttackMagazineCount(id) < 1
-    end
+    local chargeData = data.Charge
+    local charge = istable(chargeData) and chargeData.Enabled ~= false
 
-    if ply:KeyPressed(key) then
+    local canAttack = self:CanAttack(id)
+
+    if canAttack and ply:KeyPressed(key) and (self:GetCurrentAttackTime() < 1 or self:GetCurrentAttackName() == "") then
         self:Attack(id)
-    elseif (not ply:KeyDown(key) or empty) and self:GetCurrentAttackName() == id then
+    elseif self:GetCurrentAttackName() == id and not canAttack then
         self:SetCurrentAttackTime(0)
-        self:SetCurrentAttackName("")
+        self:SetCurrentAttackName("") 
     end
 end
 
@@ -159,20 +158,52 @@ function SWEP:ThinkCurrentAttack()
     local attackTime = self:GetCurrentAttackTime()
     local attackName = self:GetCurrentAttackName()
 
-    local ct = CurTime()
-    if attackTime > ct or attackName == "" then return end
-
+    if attackName == "" then return end
+    
     local data = self:GetAttackTable(attackName)
+
     local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
 
-    local attackData = self:BuildAttackData(attackName)
+    local ct = CurTime()
+    local ply = self:GetOwner()
 
-    self:SetCurrentAttackTime(0)
-    self:SetCurrentAttackName("")
+    local chargeData = data.Charge
+    local charge = istable(chargeData) and chargeData.Enabled ~= false
+
+    if charge then
+        if ply:KeyDown(self:GetAttackKey(data)) then return end
+    else
+        if attackTime > ct then return end
+        self:SetCurrentAttackTime(0)
+        self:SetCurrentAttackName("")
+    end
+
+    local attackData = self:BuildAttackData(attackName)
+    if charge then
+        attackData.Charge = {
+            Start = self:GetCurrentAttackTime(),
+            End = ct
+        }
+    end
 
     if attackType == aerial.enums.ATTACK_TYPE_MELEE then
         self:AttackMeleePerform(attackName, attackData)
     elseif attackType == aerial.enums.ATTACK_TYPE_BULLET then
         self:AttackBulletPerform(attackName, attackData)
-    end    
+    elseif attackType == aerial.enums.ATTACK_TYPE_PROJECTILE then
+        self:AttackProjectilePerform(attackName, attackData)
+    end
+end
+
+function SWEP:ThinkFlags()
+    for name, data in pairs(self:GetAttackTables()) do
+        if not isnumber(data.Flags) then continue end
+
+        if SERVER and bit.band(data.Flags, aerial.enums.ATTACK_FLAGS_REMOVE_ON_ZERO_AMMO) == aerial.enums.ATTACK_FLAGS_REMOVE_ON_ZERO_AMMO then
+            local ammoCount = self:GetAttackMagazineCount(name)
+            if ammoCount < 1 then
+                self:Remove()
+            end            
+        end
+    end
 end

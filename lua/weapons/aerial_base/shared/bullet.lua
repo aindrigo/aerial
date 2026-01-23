@@ -41,14 +41,31 @@ function SWEP:AttackBulletPerform(id, attackData)
 
     local magazineCount = self:GetAttackMagazineCount(id)
     attackData.Delay = attackData.Delay or data.Delay or 0.1
-
+    
     local fireMode = self:GetAttackFireModeEnum(id)
-    local nextAttack = CurTime() + attackData.Delay
-    if fireMode == aerial.enums.FIRE_MODE_AUTOMATIC then
-        self:SetCurrentAttackName(id)
-        self:SetCurrentAttackTime(nextAttack)
-    elseif fireMode == aerial.enums.FIRE_MODE_SEMIAUTOMATIC then
-        self:SetNextAttack(nextAttack)
+    local chargeData = data.Charge
+
+    local attackTime = CurTime()
+    attackTime = attackTime + attackData.Delay
+
+    local key = self:GetAttackKey(data)
+    local keyDown = ply:KeyDown(key)
+
+    if not istable(chargeData) or chargeData.Enabled == false then
+        if fireMode == aerial.enums.FIRE_MODE_AUTOMATIC and keyDown then
+            self:SetCurrentAttackName(id)
+            self:SetCurrentAttackTime(attackTime)
+        elseif fireMode == aerial.enums.FIRE_MODE_SEMIAUTOMATIC then
+            self:SetNextAttack(id, attackTime)
+        end
+    else
+        if fireMode == aerial.enums.FIRE_MODE_AUTOMATIC and keyDown then
+            self:SetCurrentAttackName(id)
+            self:SetCurrentAttackTime(attackTime)
+        elseif fireMode == aerial.enums.FIRE_MODE_SEMIAUTOMATIC then
+            self:SetCurrentAttackName("")
+            self:SetCurrentAttackTime(0)
+        end
     end
 
     if magazineCount < 1 then
@@ -64,8 +81,8 @@ function SWEP:AttackBulletPerform(id, attackData)
         return
     end
     
-    self:SetAttackMagazineCount(id, magazineCount - 1)
-
+    self:AttackTakeAmmo(id, 1)
+   
     attackData.Delay = delay
     attackData.Damage = data.Damage
     attackData.DamageType = attackData.DamageType or data.DamageType or DMG_BULLET
@@ -157,13 +174,18 @@ function SWEP:AttackBulletEffects(id, attackData)
         end
 
         if not customRecoil.Disabled then
-            self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
-
             local force = customRecoil.Force or attackData.Damage / 6
-            local yaw = util.SharedRandom("ARCRY", (customRecoil.MinYaw or -2), (customRecoil.MaxYaw or 2))
+            local yaw = attackData.Recoil.x * 0.2
+            
+            if isnumber(customRecoil.YawMultiplier) then
+                yaw = yaw * customRecoil.YawMultiplier
+            end
 
-            self:SetCustomRecoilTargetPosition(Vector(-force, 0, 0))
-            self:SetCustomRecoilTargetAngles(Angle(-force, 0, 0))
+            local pitch = -force
+
+            self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
+            self:SetCustomRecoilTargetPosition(Vector(pitch, 0, 0))
+            self:SetCustomRecoilTargetAngles(Angle(pitch, yaw, 0))
         end
     else
         self:PlayAnimation(attackData.Animation or data.ShootAnimation or ACT_VM_PRIMARYATTACK)

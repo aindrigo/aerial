@@ -21,6 +21,7 @@ aerial.enums = aerial.enums or {}
 aerial.enums.ATTACK_TYPE_NONE = 0
 aerial.enums.ATTACK_TYPE_BULLET = 1
 aerial.enums.ATTACK_TYPE_MELEE = 2
+aerial.enums.ATTACK_TYPE_PROJECTILE = 3
 
 aerial.enums.RELOAD_MODE_NORMAL = 0
 aerial.enums.RELOAD_MODE_BULLET_BY_BULLET = 1
@@ -30,3 +31,10 @@ aerial.enums.FIRE_MODE_AUTOMATIC = 1
 
 aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING = 0
 aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK = 1
+
+aerial.enums.PROJECTILE_TYPE_COLLISION = 0
+aerial.enums.PROJECTILE_TYPE_TIMER = 1
+
+aerial.enums.ATTACK_FLAGS_NONE = 0
+aerial.enums.ATTACK_FLAGS_REMOVE_ON_ZERO_AMMO = 1
+aerial.enums.ATTACK_FLAGS_NO_AMMO = 2

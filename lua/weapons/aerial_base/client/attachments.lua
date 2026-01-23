@@ -83,14 +83,25 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
     model:DrawModel(flags)
 
     if istable(cosmeticData.Reticule) then
-        aerial.render.MaskEntity(model)
+        if cosmeticData.Reticule.Mask ~= false then
+            aerial.render.MaskEntity(model)
+        end
         self:VMDrawReticule(name, data, vm, model, matrix, cosmeticData.Reticule)
-        aerial.render.Unmask()
+        
+        if cosmeticData.Reticule.Mask ~= false then
+            aerial.render.Unmask()
+        end
     elseif istable(cosmeticData.Reticules) then
         aerial.render.MaskEntity(model)
 
         for _, reticule in ipairs(cosmeticData.Reticules) do
+            if reticule.Mask == false then
+                aerial.render.Unmask()
+            end
+
             self:VMDrawReticule(name, data, vm, model, matrix, reticule)
+
+            aerial.render.MaskEntity(model)
         end
 
         aerial.render.Unmask()

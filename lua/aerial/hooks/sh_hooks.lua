@@ -26,6 +26,12 @@ hook.Add("PlayerButtonDown", "aerialButtonDown", function(ply, button)
     wep:ToggleFireMode()
 end)
 
+hook.Add("PhysgunPickup", "aerialPhysgunPickup", function(ply, ent)
+    if ent:GetClass() == "aerial_projectile" then
+        return false
+    end
+end)
+
 hook.Add("EntityRemoved", "aerialEntityRemoved", function(ent, fullUpdate)
     if not ent:IsWeapon() or not ent.Aerial or (CLIENT and fullUpdate) then return end
 

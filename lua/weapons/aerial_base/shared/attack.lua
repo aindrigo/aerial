@@ -26,19 +26,6 @@ function SWEP:SetNextAttack(id, value)
     return func(self, value)
 end
 
-function SWEP:PrimaryAttack()
-end
-
-function SWEP:SecondaryAttack()
-end
-
-function SWEP:CanAttack(id)
-    if self:FireHook("CanAttack", id) == false then return false end
-
-    local ct = CurTime()
-    return ct > self:GetCurrentAttackTime() and ct >= self:GetNextAttack(id) and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime()
-end
-
 function SWEP:BuildAttackData(id)
     local data = self:GetAttackTable(id)
     local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
@@ -55,6 +42,31 @@ function SWEP:BuildAttackData(id)
     return attackData
 end
 
+function SWEP:AttackTakeAmmo(id, count)
+    local data = self:GetAttackTable(id)
+    local flags = data.Flags or 0
+
+    if bit.band(flags, aerial.enums.ATTACK_FLAGS_NO_AMMO) == aerial.enums.ATTACK_FLAGS_NO_AMMO then
+        return
+    end
+
+    self:SetAttackMagazineCount(id, math.max(self:GetAttackMagazineCount(id) - (count or 1), 0))
+end
+
+function SWEP:PrimaryAttack()
+end
+
+function SWEP:SecondaryAttack()
+end
+
+function SWEP:CanAttack(id)
+    if self:FireHook("CanAttack", id) == false then return false end
+
+    local ct = CurTime()
+    return ct >= self:GetNextAttack(id) and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime()
+end
+
+
 function SWEP:Attack(id)
     if self:FireHook("Attack", id) or not self:CanAttack(id) then return end
 
@@ -66,6 +78,8 @@ function SWEP:Attack(id)
         self:AttackBullet(id)
     elseif attackType == aerial.enums.ATTACK_TYPE_MELEE then
         self:AttackMelee(id)
+    elseif attackType == aerial.enums.ATTACK_TYPE_PROJECTILE then
+        self:AttackProjectile(id)
     end
 end
 

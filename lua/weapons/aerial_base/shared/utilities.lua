@@ -38,6 +38,22 @@ function SWEP:GetAttackTable(id)
     return self.AttackTables[id]
 end
 
+function SWEP:GetAttackKey(idOrData)
+    local data = idOrData
+    if isstring(idOrData) then
+        data = self:GetAttackTable(idOrData)
+    end
+
+    local key = data.Key
+    if isnumber(key) then return key end
+
+    if data.ID == "Primary" then
+        return IN_ATTACK
+    elseif data.ID == "Secondary" then
+        return IN_ATTACK2
+    end
+end
+
 function SWEP:GetLastAttackTable()
     return self:GetAttackTable(self:GetLastAttackName())
 end

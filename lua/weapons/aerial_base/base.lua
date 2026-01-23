@@ -122,8 +122,16 @@ function SWEP:Deploy()
     self:FireHook("Deploy")
     self:Reset()
 
-    self:PlayAnimation(ACT_VM_DEPLOY)
+    self:PlayAnimation(self.DeployAnimation or ACT_VM_DRAW)
     self:QueueIdle()
+
+    return true
+end
+
+function SWEP:Holster()
+    self:FireHook("Holster")
+
+    return true
 end
 
 function SWEP:OnReloaded()
@@ -149,7 +157,7 @@ function SWEP:SetupDataTables()
     self:NetworkVar("Float", "ReloadStartTime") -- Used for reload camera
     self:NetworkVar("Float", "ReloadEndTime") -- Used for reload camera
     self:NetworkVar("Float", "FireModeTime") -- Used to delay attacks/reload after setting firemode
-    self:NetworkVar("Float", "CurrentAttackTime") -- Used for melee mostly, could be adapted to projectiles too though
+    self:NetworkVar("Float", "CurrentAttackTime") -- Used for delayed/automatic attacks
     self:NetworkVar("Int", "PrimaryFireMode") -- Firemode for primary
     self:NetworkVar("Int", "SecondaryFireMode") -- Firemode for secondary
     self:NetworkVar("Int", "CustomRecoilMode") -- Recoil mode, see aerial.enums.CUSTOM_RECOIL_MODE

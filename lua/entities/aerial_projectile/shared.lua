@@ -16,24 +16,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-function SWEP:CalcView(ply, position, angles, fov)
-    if not self:GetReloading() or not aerial.console.reloadCameraEnabled:GetBool() then return end
+ENT.Type = "anim"
+ENT.Base = "base_gmodentity"
 
-    local muzzleOrigin = self:GetMuzzleAttachment()
-    local realMuzzle = self:GetRealMuzzleAttachment()
+ENT.PrintName = "Projectile"
+ENT.Author = "aindrigo"
+ENT.Contact = "Fuck off"
 
-    local ct = CurTime()
-    local startTime = self:GetReloadStartTime()
-    local endTime = self:GetReloadEndTime()
+ENT.Purpose = "Internally used for projectiles. Do not spawn unless you absolutely know what you're doing."
+ENT.Instructions = ENT.Purpose
 
-    local fraction = math.TimeFraction(startTime, endTime, ct)
-    fraction = math.sin(math.pi * fraction)
-
-    local muzzleDifference = realMuzzle.Pos - muzzleOrigin.Pos
-    muzzleDifference:Mul(fraction)
-
-    angles:RotateAroundAxis(angles:Up(), muzzleDifference.y)
-    angles:RotateAroundAxis(angles:Right(), -muzzleDifference.z)
-
-    return position, angles, fov
-end
+ENT.Spawnable = false
+ENT.AdminOnly = true

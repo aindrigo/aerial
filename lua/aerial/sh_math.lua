@@ -63,3 +63,14 @@ function aerial.math.Lerp(frac, p1, p2)
         error("Unsupported type")
     end
 end
+
+--- Rounds number to the nearest multiple of another number
+-- @realm shared
+-- @number x Number to round
+-- @number y Multiple
+-- @treturn number Result
+function aerial.math.RoundToMultiple(x, y)
+    if math.fmod(x, y) == 0 then return x end
+
+    return x + y - 1 - math.fmod(x + y - 1, y)
+end
