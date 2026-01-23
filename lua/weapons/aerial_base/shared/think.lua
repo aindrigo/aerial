@@ -46,10 +46,17 @@ function SWEP:ThinkAttack(id, key)
         aerial.dprint("Warning: conflicting keys for ironsights and attack "..id)
     end
 
-    local chargeData = data.Charge
-    local charge = istable(chargeData) and chargeData.Enabled ~= false
 
     local canAttack = self:CanAttack(id)
+
+    local chargeData = data.Charge
+    if istable(chargeData) then
+        local chargeType = chargeData.Type or aerial.enums.CHARGE_TYPE_RELEASE
+        if chargeType ~= aerial.enums.CHARGE_TYPE_RELEASE then
+            canAttack = canAttack and ply:KeyDown(key)
+        end
+    end
+
 
     if canAttack and ply:KeyPressed(key) and (self:GetCurrentAttackTime() < 1 or self:GetCurrentAttackName() == "") then
         self:Attack(id)
@@ -168,10 +175,15 @@ function SWEP:ThinkCurrentAttack()
     local ply = self:GetOwner()
 
     local chargeData = data.Charge
-    local charge = istable(chargeData) and chargeData.Enabled ~= false
 
-    if charge then
-        if ply:KeyDown(self:GetAttackKey(data)) then return end
+    if istable(chargeData) then
+        local chargeType = chargeData.Type or aerial.enums.CHARGE_TYPE_RELEASE
+        if chargeType == aerial.enums.CHARGE_TYPE_RELEASE then
+            if ply:KeyDown(self:GetAttackKey(data)) then return end
+
+        elseif chargeType == aerial.enums.CHARGE_TYPE_HOLD then
+            if attackTime > ct then return end
+        end
     else
         if attackTime > ct then return end
         self:SetCurrentAttackTime(0)

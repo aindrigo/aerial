@@ -18,19 +18,8 @@
 
 function SWEP:AttackBullet(id)
     if self:FireHook("AttackBullet", id) then return end
-    local data = self:GetAttackTable(id)
-
     self:AttackBulletPreEffects(id)
-
-    if not isnumber(data.StartDelay) or data.StartDelay <= 0 then
-        local attackData = self:BuildAttackData(id)
-        self:AttackBulletPerform(id, attackData)
-        return
-    end
-
-    local ct = CurTime()
-    self:SetCurrentAttackTime(ct + data.StartDelay)
-    self:SetCurrentAttackName(id)
+    self:AttackSchedule(id, self.AttackBulletPerform)
 end
 
 function SWEP:AttackBulletPerform(id, attackData)

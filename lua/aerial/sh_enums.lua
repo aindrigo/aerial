@@ -35,3 +35,6 @@ aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK = 1
 aerial.enums.ATTACK_FLAGS_NONE = 0
 aerial.enums.ATTACK_FLAGS_REMOVE_ON_ZERO_AMMO = 1
 aerial.enums.ATTACK_FLAGS_NO_AMMO = 2
+
+aerial.enums.CHARGE_TYPE_RELEASE = 0 -- Triggers on release
+aerial.enums.CHARGE_TYPE_HOLD = 1 -- Triggers on ATTACK.Charge.HoldTime, canceled if released

@@ -19,18 +19,8 @@
 function SWEP:AttackMelee(id)
     if self:FireHook("AttackMelee", id) then return end
     local data = self:GetAttackTable(id)
-
     self:AttackMeleePreEffects(id)
-
-    if not isnumber(data.StartDelay) or data.StartDelay <= 0 then
-        local attackData = self:BuildAttackData(id)
-        self:AttackMeleePerform(id, attackData)
-        return
-    end
-
-    local ct = CurTime()
-    self:SetCurrentAttackTime(ct + data.StartDelay)
-    self:SetCurrentAttackName(id)
+    self:AttackSchedule(id, self.AttackMeleePerform)
 end
 
 function SWEP:AttackMeleePerform(id, attackData)

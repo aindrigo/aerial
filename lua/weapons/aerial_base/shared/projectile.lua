@@ -18,12 +18,8 @@
 
 function SWEP:AttackProjectile(id)
     if self:FireHook("AttackProjectile", id) then return end
-    local ct = CurTime()
-
     self:AttackProjectilePreEffects(id)
-
-    self:SetCurrentAttackName(id)
-    self:SetCurrentAttackTime(ct)
+    self:AttackSchedule(id, self.AttackProjectilePerform)
 end
 
 function SWEP:AttackProjectilePerform(id, attackData)
