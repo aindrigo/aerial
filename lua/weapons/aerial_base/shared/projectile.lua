@@ -52,7 +52,7 @@ function SWEP:AttackProjectilePerform(id, attackData)
     if SERVER and IsFirstTimePredicted() then
         local ent = ents.Create("aerial_projectile")
         ent:SetAttackData(attackData)
-        ent:SetProjectileData(data)
+        ent:SetProjectileData(data.Projectile)
         ent:Spawn()
     end
 

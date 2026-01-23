@@ -23,9 +23,9 @@ include("shared.lua")
 
 AccessorFunc(ENT, "m_tAttackData", "AttackData")
 AccessorFunc(ENT, "m_tProjectileData", "ProjectileData")
-AccessorFunc(ENT, "m_iProjectileType", "ProjectileType", FORCE_NUMBER)
 AccessorFunc(ENT, "m_iProjectileHealth", "ProjectileHealth", FORCE_NUMBER)
 AccessorFunc(ENT, "m_fProjectileTime", "ProjectileTime", FORCE_NUMBER)
+AccessorFunc(ENT, "m_bExecuted", "Executed", FORCE_BOOL)
 
 function ENT:Initialize()
     local projectileData = self:GetProjectileData()
@@ -34,21 +34,28 @@ function ENT:Initialize()
     local attackData = self:GetAttackData()
     assert(istable(attackData))
 
-    -- Position
     local trace = {}
     trace.start = attackData.Position
     trace.endpos = trace.start + attackData.Direction * (projectileData.InitialDistance or 50)
     trace.filter = attackData.Attacker
 
     local traceResult = util.TraceLine(trace)
-    self:SetPos(traceResult.HitPos)
 
-    -- Angles
+    -- Transform
+    local position = traceResult.HitPos
     local angles = attackData.Direction:Angle()
-    if isangle(projectileData.AnglesOffset) then
-        angles = angles + projectileData.AnglesOffset
+
+    if istable(projectileData.ThrowOffset) then
+        if isvector(projectileData.ThrowOffset.Position) then
+            position = position + projectileData.ThrowOffset.Position
+        end
+
+        if isangle(projectileData.ThrowOffset.Angles) then
+            angles = angles + projectileData.ThrowOffset.Angles
+        end
     end
 
+    self:SetPos(position)
     self:SetAngles(angles)
 
     -- Other
@@ -57,13 +64,18 @@ function ENT:Initialize()
     self:SetMoveType(MOVETYPE_VPHYSICS)
     self:SetSolid(SOLID_VPHYSICS)
 
-    local projectileType = projectileData.Type or aerial.enums.PROJECTILE_TYPE_COLLISION
-    self:SetProjectileType(projectileType)
+    self:SetExecuted(false)
 
-    if projectileType == aerial.enums.PROJECTILE_TYPE_COLLISION then
-        self:SetProjectileHealth(projectileData.Health or 100)
-    elseif projectileType == aerial.enums.PROJECTILE_TYPE_TIMER then
+    if istable(projectileData.Health) then
+        self:SetProjectileHealth(projectileData.Health.Maximum or 100)
+    else
+        self:SetProjectileHealth(0)
+    end
+
+    if isnumber(projectileData.Time) then
         self:SetProjectileTime(CurTime() + projectileData.Time)
+    else
+        self:SetProjectileTime(0)
     end
 
     local phys = self:GetPhysicsObject()
@@ -74,23 +86,40 @@ function ENT:Initialize()
 end
 
 function ENT:PhysicsCollide(collisionData, collider)
-    if self:GetProjectileType() ~= aerial.enums.PROJECTILE_TYPE_COLLISION then return end
+    if self:GetExecuted() then return end
     local projectileData = self:GetProjectileData()
 
-    local health = self:GetProjectileHealth()
-    if health < 1 then return end
-
-    local penalty = (collisionData.Speed / 20) * (projectileData.HitPenalty or 1)
-    health = math.max(health - penalty, 0)
-    self:SetProjectileHealth(health)
-
-    if health < 1 then
-        self:ExecuteProjectile()
+    if projectileData.CollideSound then
+        self:EmitSound(projectileData.CollideSound)
     end
+
+    local time = self:GetProjectileTime()
+    if istable(projectileData.Health) then
+        local health = self:GetProjectileHealth()
+        local penalty = (collisionData.Speed / 20) * (projectileData.Health.CollidePenalty or 1)
+        health = math.max(health - penalty, 0)
+
+        self:SetProjectileHealth(health)
+
+        if health < 1 then
+            self:ExecuteProjectile()
+            return
+        end
+    end
+
+
+    if self:GetProjectileTime() > 0 then
+        local ct = CurTime()
+        local newTime = ct + (projectileData.Time or 5)
+        local maxTime = projectileData.MaxTime or 0
+
+        self:SetProjectileTime(math.min(maxTime, newTime))
+    end
+
 end
 
 function ENT:Think()
-    if self:GetProjectileType() ~= aerial.enums.PROJECTILE_TYPE_TIMER then return end
+    if self:GetExecuted() then return end
 
     local time = self:GetProjectileTime()
     if time < 1 then return end
@@ -101,16 +130,11 @@ function ENT:Think()
     end
 end
 
-function ENT:FireHook(name, ...)
-    local projectileData = self:GetProjectileData()
-    if not istable(projectileData.Hooks) then return end
-
-    local func = projectileData.Hooks[name]
-    if not isfunction(func) then return end
-
-    return func(self, name, ...)
-end
-
 function ENT:ExecuteProjectile()
-    self:FireHook("ExecuteProjectile")
+    local projectileData = self:GetProjectileData()
+    if isfunction(projectileData.Execute) then
+        projectileData.Execute(self)
+    end
+
+    self:SetExecuted(true)
 end

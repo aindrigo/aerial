@@ -75,7 +75,6 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         matrix:Rotate(cosmeticData.Angles)
     end
 
-    local shouldMask = false
 
     model:SetPos(matrix:GetTranslation())
     model:SetAngles(matrix:GetAngles())
@@ -83,12 +82,14 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
     model:DrawModel(flags)
 
     if istable(cosmeticData.Reticule) then
-        if cosmeticData.Reticule.Mask ~= false then
+        local shouldMask = cosmeticData.Reticule.Mask ~= false
+        if shouldMask then
             aerial.render.MaskEntity(model)
         end
+
         self:VMDrawReticule(name, data, vm, model, matrix, cosmeticData.Reticule)
         
-        if cosmeticData.Reticule.Mask ~= false then
+        if shouldMask then
             aerial.render.Unmask()
         end
     elseif istable(cosmeticData.Reticules) then
