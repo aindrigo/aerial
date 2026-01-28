@@ -44,7 +44,7 @@ function SWEP:ThinkAttack(id, key)
         self:Attack(id)
     elseif self:GetCurrentAttackName() == id and not canAttack then
         self:SetCurrentAttackTime(0)
-        self:SetCurrentAttackName("") 
+        self:SetCurrentAttackName("")
     end
 end
 
@@ -89,52 +89,6 @@ function SWEP:ThinkReload()
     end
 end
 
-function SWEP:ThinkRecoil()
-    local ft = FrameTime()
-
-    local recoil = self:GetRecoil()
-    if recoil.x == 0 and recoil.z == 0 then return end
-    local recoilData = self.Recoil or {}
-    local compensation = recoilData.Compensation or 1
-
-    self:SetRecoil(aerial.math.Lerp(ft * 4 * compensation, recoil, vector_origin))
-end
-
-function SWEP:ThinkCustomRecoil()
-    local ft = FrameTime()
-    
-    local targetPosition = self:GetCustomRecoilTargetPosition()
-    local targetAngles = self:GetCustomRecoilTargetAngles()
-
-    local currentPosition = self:GetCustomRecoilPosition()
-    local currentAngles = self:GetCustomRecoilAngles()
-
-    local mode = self:GetCustomRecoilMode()
-
-    if currentPosition == targetPosition and currentAngles == targetAngles then
-        if mode == aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING then
-            return
-        end
-
-        mode = aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING
-        targetPosition = Vector()
-        targetAngles = Angle()
-
-        self:SetCustomRecoilMode(mode)
-        self:SetCustomRecoilTargetPosition(targetPosition)
-        self:SetCustomRecoilTargetAngles(targetAngles)
-    end
-
-    local speed = mode == aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING and 8 or 48
-
-    speed = ft * speed
-    currentPosition = aerial.math.Lerp(speed, currentPosition, targetPosition)
-    currentAngles = aerial.math.Lerp(speed, currentAngles, targetAngles)
-
-    self:SetCustomRecoilPosition(currentPosition)
-    self:SetCustomRecoilAngles(currentAngles)
-end
-
 function SWEP:ThinkFireMode()
     local ct = CurTime()
     local nextFire = self:GetFireModeTime()
@@ -148,7 +102,7 @@ function SWEP:ThinkCurrentAttack()
     local attackName = self:GetCurrentAttackName()
 
     if attackName == "" then return end
-    
+
     local data = self:GetAttackTable(attackName)
 
     local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
@@ -197,7 +151,7 @@ function SWEP:ThinkFlags()
             local ammoCount = self:GetAttackMagazineCount(name)
             if ammoCount < 1 then
                 self:Remove()
-            end            
+            end
         end
     end
 end

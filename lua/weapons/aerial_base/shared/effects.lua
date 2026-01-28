@@ -49,30 +49,5 @@ function SWEP:AttackEffectMuzzleFlash(id, attackData)
             light.dietime = CurTime() + 1
             light.size = 256
         end
-    end 
-end
-
-function SWEP:AttackEffectRecoil(id, attackData)
-    if self:FireHook("AttackEffectRecoil", id, attackData) then return end
-
-    local data = self:GetAttackTable(id)
-    local ply = attackData.Attacker
-
-    -- View punch
-    local recoil = attackData.Recoil
-    local recoilData = data.Recoil or {}
-
-    local xPunch = recoilData.PunchX or 0.15
-    local zPunch = recoilData.PunchZ or 0.07
-
-    local punch = Angle(
-        util.SharedRandom("ARVPP", -recoil.z * zPunch, recoil.z * zPunch),
-        util.SharedRandom("ARVPY", 0, -recoil.x * xPunch),
-        0
-    )
-
-    ply:ViewPunch(punch)
-    if IsFirstTimePredicted() or game.SinglePlayer() then
-        ply:SetEyeAngles(ply:EyeAngles() + punch * 0.4)
     end
 end
