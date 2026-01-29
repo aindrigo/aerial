@@ -15,8 +15,6 @@ function SWEP:GetAttackFireModeEnum(id)
     return data.FireModes[self:GetAttackFireMode(id)]
 end
 
-
-
 function SWEP:ToggleFireMode()
     local ct = CurTime()
     if self:GetFireModeTime() > ct then return end

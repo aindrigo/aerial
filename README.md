@@ -5,3 +5,19 @@ A GMod weapon base originally intended to be [Longsword](https://github.com/ving
 
 ## License
 See [LICENSE](LICENSE).
+
+## Features
+* Multiple attack types supported (Primary/Secondary/Tertiary/etc)
+* Fire modes (current semiauto/auto)
+* Charged attacks (either timer-based or hold time-based)
+* Very customizable crosshair (requires support on custom gamemodes)
+
+## Crosshair
+All crosshair console variables are under aerial_crosshair in console.
+To implement the crosshair, implement this inside your HUDPaint:
+```lua
+local wep = LocalPlayer():GetActiveWeapon()
+if not IsValid(wep) or not isfunction(wep.DoDrawCrosshair) or not wep:DoDrawCrosshair(CROSSHAIR_X, CROSSHAIR_Y) then
+    -- draw default gamemode crosshair
+end
+```
