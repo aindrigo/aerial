@@ -16,10 +16,12 @@ See [LICENSE](LICENSE).
 
 ## Crosshair
 All crosshair console variables are under aerial_crosshair in console.
-To implement the crosshair, implement this inside your HUDPaint:
+To implement the crosshair, implement this inside your crosshair draw function:
 ```lua
-local wep = LocalPlayer():GetActiveWeapon()
-if not IsValid(wep) or not isfunction(wep.DoDrawCrosshair) or not wep:DoDrawCrosshair(CROSSHAIR_X, CROSSHAIR_Y) then
-    -- draw default gamemode crosshair
+local weapon = LocalPlayer():GetActiveWeapon()
+local shouldDrawWeaponCrosshair = IsValid(weapon) and isfunction(weapon.DoDrawCrosshair)
+
+if shouldDrawWeaponCrosshair and weapon:DoDrawCrosshair(CROSSHAIR_X, CROSSHAIR_Y) then
+    return
 end
 ```
