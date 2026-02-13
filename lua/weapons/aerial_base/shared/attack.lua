@@ -8,6 +8,16 @@ function SWEP:SetNextAttack(id, value)
     return func(self, value)
 end
 
+function SWEP:GetLastAttack(id)
+    local func = self["GetLast"..id.."Fire"]
+    return func(self)
+end
+
+function SWEP:SetLastAttack(id, value)
+    local func = self["SetLast"..id.."Fire"]
+    return func(self, value)
+end
+
 function SWEP:BuildAttackData(id)
     local data = self:GetAttackTable(id)
     local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET

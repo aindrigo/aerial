@@ -12,7 +12,7 @@ function SWEP:AttackBulletPerform(id, attackData)
 
     local magazineCount = self:GetAttackMagazineCount(id)
     attackData.Delay = attackData.Delay or data.Delay or 0.1
-    
+
     local fireMode = self:GetAttackFireModeEnum(id)
     local chargeData = data.Charge
 
@@ -51,16 +51,16 @@ function SWEP:AttackBulletPerform(id, attackData)
 
         return
     end
-    
+
     self:AttackTakeAmmo(id, 1)
-   
+
     attackData.Delay = delay
     attackData.Damage = data.Damage
     attackData.DamageType = attackData.DamageType or data.DamageType or DMG_BULLET
-    attackData.Recoil = self:AttackCalculateRecoil(id, attackData)
     attackData.Traces = {}
 
-    self:SetRecoil(attackData.Recoil)
+    self:SetShot( self:GetShot() + 1 )
+    self:SetLastShootTime( CurTime() ) -- HACK
 
     ply:LagCompensation(true)
     for i = 1, (data.ShotCount or 1) do
@@ -89,7 +89,7 @@ function SWEP:AttackBulletTrace(id, attackData, index)
     local ply = attackData.Attacker
 
     local data = self:GetAttackTable(id)
-    local spread = self:AttackCalculateSpread(id, attackData, index)
+    local spread = self:GetFinalShotPlacement(id, attackData, index)
 
     attackData.Spread = spread
 
@@ -98,7 +98,7 @@ function SWEP:AttackBulletTrace(id, attackData, index)
 
     angle:RotateAroundAxis(angle:Right(), spread.x)
     angle:RotateAroundAxis(angle:Up(), spread.z)
-    
+
     direction = angle:Forward()
 
     local startPosition = ply:GetShootPos()
@@ -144,20 +144,6 @@ function SWEP:AttackBulletEffects(id, attackData)
             self:QueueIdle()
         end
 
-        if not customRecoil.Disabled then
-            local force = customRecoil.Force or attackData.Damage / 6
-            local yaw = attackData.Recoil.x * 0.2
-            
-            if isnumber(customRecoil.YawMultiplier) then
-                yaw = yaw * customRecoil.YawMultiplier
-            end
-
-            local pitch = -force
-
-            self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
-            self:SetCustomRecoilTargetPosition(Vector(pitch, 0, 0))
-            self:SetCustomRecoilTargetAngles(Angle(pitch, yaw, 0))
-        end
     else
         self:PlayAnimation(attackData.Animation or data.ShootAnimation or ACT_VM_PRIMARYATTACK)
         self:QueueIdle()
@@ -178,5 +164,5 @@ function SWEP:AttackBulletEffects(id, attackData)
     end
 
     self:AttackEffectMuzzleFlash(id, attackData)
-    self:AttackEffectRecoil(id, attackData)
+    self:AttackEffectRecoil(id, data)
 end

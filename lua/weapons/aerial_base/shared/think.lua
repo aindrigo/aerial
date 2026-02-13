@@ -3,7 +3,6 @@ function SWEP:Think()
     self:ThinkAttacks()
     self:ThinkADS()
     self:ThinkReload()
-    self:ThinkRecoil()
     self:ThinkCustomRecoil()
     self:ThinkFireMode()
     self:ThinkFlags()
@@ -28,7 +27,6 @@ function SWEP:ThinkAttack(id, key)
         aerial.dprint("Warning: conflicting keys for ironsights and attack "..id)
     end
 
-
     local canAttack = self:CanAttack(id)
 
     local chargeData = data.Charge
@@ -39,13 +37,14 @@ function SWEP:ThinkAttack(id, key)
         end
     end
 
-
     if canAttack and ply:KeyPressed(key) and (self:GetCurrentAttackTime() < 1 or self:GetCurrentAttackName() == "") then
         self:Attack(id)
     elseif self:GetCurrentAttackName() == id and not canAttack then
         self:SetCurrentAttackTime(0)
         self:SetCurrentAttackName("")
     end
+
+    self:ThinkRecoil( id, data )
 end
 
 function SWEP:ThinkADS()

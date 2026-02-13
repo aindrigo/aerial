@@ -32,6 +32,11 @@ function SWEP:DrawDeveloperHUD()
     surface.SetFont("aerial24")
     surface.DrawText("Last Attack: "..self:GetLastAttackName())
 
+    y = y + 24
+    surface.SetTextPos(48, y)
+    surface.SetFont("aerial24")
+    surface.DrawText("Shot: "..self:GetShot())
+
     y = y + 48
 
     local attackData = self:GetLastAttackTable()
@@ -61,7 +66,7 @@ function SWEP:DrawDeveloperHUD()
         y = y + 24
 
         surface.SetTextPos(48, y)
-        surface.DrawText("Last Recoil: "..tostring(lastAttack.Recoil or vector_origin))
+        surface.DrawText("Shot Fraction: "..self:GetShotFrac( attackData ))
 
         y = y + 48
     end

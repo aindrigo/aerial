@@ -14,6 +14,7 @@ function SWEP:FindMuzzleAttachment()
     end
 
     local vmSettings = self.VMSettings or {}
+    if not IsValid( self:GetOwner() ) then return end
 
     local vm = self:VM()
     local dummy = ClientsideModel(vm:GetModel(), RENDERGROUP_VIEWMODEL)
@@ -49,7 +50,7 @@ function SWEP:GetRealMuzzleAttachment()
     if hookResult ~= nil then
         return hookResult
     end
-    
+
     local vm = self:VM()
     local vmSettings = self.VMSettings or {}
 
@@ -68,7 +69,7 @@ function SWEP:GetRealMuzzleAttachment()
         aerial.dprint("Warning: muzzle attachment "..muzzleAttachmentName.." not found")
     end
 
-    
+
 
     return muzzleAttachment
 end

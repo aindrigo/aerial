@@ -8,9 +8,9 @@ function SWEP:GetCrosshairGap(static)
     local attackData = self:GetLastAttackTable()
     local spreadData = attackData.Spread or {}
 
-    local base = spreadData.Cone or 0.2
+    local base = spreadData.Cone
     if not static then
-        base = base * self:_GetSpreadModifier(spreadData)
+        base = base * self:_GetSpreadModifier(attackData, spreadData)
     end
 
     base = base - aerial.console.crosshair.gapAdditive:GetFloat()
@@ -19,7 +19,20 @@ function SWEP:GetCrosshairGap(static)
     return base * aerial.console.crosshair.gap:GetFloat()
 end
 
+function SWEP:GetCrosshairPos( x, y )
+    local id = self:GetLastAttackName()
+    local attackData = self:GetLastAttackTable()
+
+    local recoil = self:AttackCalculateRecoil( id, attackData )
+    recoil.z = -recoil.z * 14 -- this seems to be the magic number
+    recoil.x = -recoil.x * 14
+
+    return x + recoil.z, y + recoil.x
+end
+
 function SWEP:DoDrawCrosshair(x, y)
+    x, y = self:GetCrosshairPos( x, y )
+
     local ft = FrameTime()
     local length = aerial.console.crosshair.length:GetFloat()
     local thickness = aerial.console.crosshair.thickness:GetFloat()
@@ -68,11 +81,11 @@ function SWEP:DoDrawCrosshair(x, y)
             surface.SetDrawColor(red, green, blue, alpha)
         end
 
-        
+
         surface.DrawRect(x - thicknessDot / 2, y - thicknessDot / 2, thicknessDot, thicknessDot)
     end
 
-    
+
 
     return true
 end
