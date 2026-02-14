@@ -1,6 +1,9 @@
 local sin = math.sin
 local cos = math.cos
 
+SWEP.ViewModelOffsetPosition = vector_origin
+SWEP.ViewModelOffsetAngles = angle_zero
+
 function SWEP:GetViewModelPosition(eyePos, eyeAng)
     -- We have to use our own time-delta calculation because (Real)FrameTime seems to just not work properly in this hook
     -- Also, SysTime is much smoother
@@ -20,12 +23,15 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     matrix:SetTranslation(eyePos)
     matrix:SetAngles(eyeAng)
 
+    matrix:Translate( self.ViewModelOffsetPosition )
+    matrix:Rotate( self.ViewModelOffsetAngles )
+
     local moveSpeed = self:GetOwnerSpeed()
 
     -- Calculations
     self:VMADS(ct, ft, matrix)
     self:VMViewSway(ct, ft, muzzleAttachment, matrix)
-    self:VMCustomRecoil(ct, ft, muzzleAttachment, matrix)
+    self:VMRecoil(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
 
@@ -145,7 +151,7 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     local rot = Angle(difference.p, difference.y, 0)
     rot.p = math.Clamp(rot.p * 0.3 * multiplier, -range, range)
     rot.y = math.Clamp(rot.y * 0.3 * multiplier, -range, range)
-    
+
     if rot.y >= 180 then
         rot.y = rot.y - 360
     elseif rot.y <= -180 then
@@ -197,29 +203,6 @@ function SWEP:VMADS(ct, ft, matrix)
     matrix:Translate(math.QuadraticBezier(self.m_fADSFraction, Vector(), adsData.MiddlePosition, position))
 end
 
-function SWEP:VMCustomRecoil(ct, ft, muzzle, matrix)
-    local currentPosition = self:GetCustomRecoilPosition()
-    local currentAngles = self:GetCustomRecoilAngles()
-
-    local smoothPosition = self.m_vCurrentRecoilPosition or currentPosition
-    local smoothAngles = self.m_aCurrentRecoilAngles or currentAngles
-
-    -- Smooth it out because tickrate can be low
-    smoothPosition = aerial.math.Lerp(ft * 48, smoothPosition, currentPosition)
-    smoothAngles = aerial.math.Lerp(ft * 48, smoothAngles, currentAngles)
-
-    self.m_vCurrentRecoilPosition = smoothPosition
-    self.m_aCurrentRecoilAngles = smoothAngles
-
-    if smoothPosition == vector_origin and smoothAngles == angle_zero then return end
-
-    matrix:Translate(smoothPosition)
-
-    matrix:Translate(muzzle.Pos)
-    matrix:Rotate(smoothAngles)
-    matrix:Translate(-muzzle.Pos)
-end
-
 function SWEP:ViewModelDrawn(vm, flags)
     local attachments = aerial.Attachments.Data[self:EntIndex()] or {}
     for name, data in pairs(attachments) do
@@ -229,7 +212,7 @@ function SWEP:ViewModelDrawn(vm, flags)
     -- local vmSettings = self.VMSettings or {}
     -- if istable(vmSettings.Elements) then
     --     for _, data in ipairs(vmSettings.Elements) do
-            
+
     --     end
     -- end
 end

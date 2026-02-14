@@ -3,6 +3,10 @@ function SWEP:CanADS()
         return false
     end
 
+    if self:GetOwnerSpeed() > 0.8 then
+        return false
+    end
+
     local ct = CurTime()
     return not self:GetReloading() and ct >= self:GetReloadTime()
 end

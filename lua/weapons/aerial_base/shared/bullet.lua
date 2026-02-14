@@ -108,6 +108,7 @@ function SWEP:AttackBulletTrace(id, attackData, index)
     traceData.start = startPosition
     traceData.endpos = endPosition
     traceData.filter = { self, ply }
+    traceData.mask = MASK_SHOT
 
     local traceResult = util.TraceLine(traceData)
 

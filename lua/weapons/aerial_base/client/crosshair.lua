@@ -19,13 +19,31 @@ function SWEP:GetCrosshairGap(static)
     return base * aerial.console.crosshair.gap:GetFloat()
 end
 
+local lastx = 0
+local lasty = 0
 function SWEP:GetCrosshairPos( x, y )
     local id = self:GetLastAttackName()
     local attackData = self:GetLastAttackTable()
 
+    if not attackData.Recoil or not self:GetADS() then
+        return x, y
+    end
+
+    local lerpSpeed = 16
     local recoil = self:AttackCalculateRecoil( id, attackData )
-    recoil.z = -recoil.z * 14 -- this seems to be the magic number
-    recoil.x = -recoil.x * 14
+    if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
+        recoil.z = 0 -- reset
+        recoil.x = 0
+        lerpSpeed = 4
+    else
+        recoil.z = -recoil.z * 14 -- this seems to be the magic number
+        recoil.x = -recoil.x * 14
+    end
+
+    recoil.z = Lerp( FrameTime() * lerpSpeed, lastx, recoil.z )
+    recoil.x = Lerp( FrameTime() * lerpSpeed, lasty, recoil.x )
+    lastx = recoil.z
+    lasty = recoil.x
 
     return x + recoil.z, y + recoil.x
 end
