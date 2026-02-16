@@ -49,6 +49,7 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         matrix:Rotate(vm:GetAngles())
     end
 
+
     if isvector(cosmeticData.Position) then
         matrix:Translate(cosmeticData.Position)
     end
@@ -57,6 +58,9 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         matrix:Rotate(cosmeticData.Angles)
     end
 
+    if isnumber(cosmeticData.Scale) then
+        model:SetModelScale(cosmeticData.Scale)
+    end
 
     model:SetPos(matrix:GetTranslation())
     model:SetAngles(matrix:GetAngles())
@@ -70,7 +74,7 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         end
 
         self:VMDrawReticule(name, data, vm, model, matrix, cosmeticData.Reticule)
-        
+
         if shouldMask then
             aerial.render.Unmask()
         end
