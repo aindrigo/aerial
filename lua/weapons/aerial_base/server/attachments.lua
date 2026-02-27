@@ -2,7 +2,7 @@ function SWEP:GiveAttachment(name, network)
     self:FireHook("GiveAttachment", name, network)
 
     if not istable(self.Attachments) or not istable(self.Attachments[name]) then
-        error("Invalid attachment "..name)
+        error("invalid attachment "..name)
         return
     end
 
@@ -19,7 +19,7 @@ end
 function SWEP:TakeAttachment(name, network)
     self:FireHook("GiveAttachment", name, network)
     if not istable(self.Attachments) or not istable(self.Attachments[name]) then
-        error("Invalid attachment "..name)
+        error("invalid attachment "..name)
         return
     end
 

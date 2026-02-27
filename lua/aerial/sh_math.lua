@@ -14,7 +14,7 @@ end
 -- @any p1 Point 1
 -- @any p2 Point 2
 function aerial.math.Lerp(frac, p1, p2)
-    assert(type(p1) == type(p2), "Type mismatch for p1 and p2")
+    assert(type(p1) == type(p2), "type mismatch for p1 and p2")
     local minDist = 0.001
 
     if isvector(p1) then
@@ -42,7 +42,7 @@ function aerial.math.Lerp(frac, p1, p2)
 
         return Lerp(frac, p1, p2)
     else
-        error("Unsupported type")
+        error("unsupported type" .. type(p1))
     end
 end
 
