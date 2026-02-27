@@ -14,6 +14,10 @@ See [LICENSE](LICENSE).
 * Charged attacks (either timer-based or hold time-based)
 * Very customizable crosshair (requires support on custom gamemodes)
 
+## Compatibility
+Currently not compatible with Longsword (both old & new afaik), all public versions I know of use weapon metatables for Give/TakeAttachment methods.
+Plutonic compatibility has not been tested. Other weapon bases *should* work fine.
+
 ## Crosshair
 All crosshair console variables are under aerial_crosshair in console.
 To implement the crosshair, implement this inside your crosshair draw function:
@@ -25,3 +29,4 @@ if shouldDrawWeaponCrosshair and weapon:DoDrawCrosshair(CROSSHAIR_X, CROSSHAIR_Y
     return
 end
 ```
+
