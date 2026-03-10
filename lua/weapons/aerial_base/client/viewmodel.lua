@@ -28,6 +28,16 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     self:VMCustomRecoil(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
+    if ( type(self.VMOffset) == "table" ) then
+        if ( type(self.VMOffset.Position) == "Vector" ) then
+            matrix:Translate(self.VMOffset.Position)
+        end
+
+        if ( type(self.VMOffset.Angles) == "Angle" ) then
+            matrix:Rotate(self.VMOffset.Angles)
+        end
+    end
+
 
     eyePos, eyeAng = matrix:GetTranslation(), matrix:GetAngles()
     self.m_fLastCurTime = ct
@@ -145,7 +155,7 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     local rot = Angle(difference.p, difference.y, 0)
     rot.p = math.Clamp(rot.p * 0.3 * multiplier, -range, range)
     rot.y = math.Clamp(rot.y * 0.3 * multiplier, -range, range)
-    
+
     if rot.y >= 180 then
         rot.y = rot.y - 360
     elseif rot.y <= -180 then
@@ -229,7 +239,7 @@ function SWEP:ViewModelDrawn(vm, flags)
     -- local vmSettings = self.VMSettings or {}
     -- if istable(vmSettings.Elements) then
     --     for _, data in ipairs(vmSettings.Elements) do
-            
+
     --     end
     -- end
 end
