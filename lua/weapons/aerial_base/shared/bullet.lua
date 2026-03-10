@@ -119,7 +119,7 @@ function SWEP:AttackBulletTrace(id, attackData, index)
 end
 
 function SWEP:AttackBulletPreEffects(id)
-    if self:FireHook("AttackBulletPreEffects", id, attackData) then return end
+    if self:FireHook("AttackBulletPreEffects", id) then return end
 
     local data = self:GetAttackTable(id)
     if isstring(data.StartSound) then
