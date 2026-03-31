@@ -34,6 +34,16 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     self:VMRecoil(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
+    if ( type(self.VMOffset) == "table" ) then
+        if ( type(self.VMOffset.Position) == "Vector" ) then
+            matrix:Translate(self.VMOffset.Position)
+        end
+
+        if ( type(self.VMOffset.Angles) == "Angle" ) then
+            matrix:Rotate(self.VMOffset.Angles)
+        end
+    end
+
 
     eyePos, eyeAng = matrix:GetTranslation(), matrix:GetAngles()
     self.m_fLastCurTime = ct

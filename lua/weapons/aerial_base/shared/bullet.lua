@@ -12,8 +12,8 @@ function SWEP:AttackBulletPerform(id, attackData)
 
     local magazineCount = self:GetAttackMagazineCount(id)
     attackData.Delay = attackData.Delay or data.Delay or 0.1
-
-    local fireMode = self:GetAttackFireModeEnum(id)
+    
+    local fireMode = self:GetAttackFireModeData(id, self:GetAttackFireMode(id))
     local chargeData = data.Charge
 
     local attackTime = CurTime()
@@ -23,17 +23,17 @@ function SWEP:AttackBulletPerform(id, attackData)
     local keyDown = ply:KeyDown(key)
 
     if not istable(chargeData) or chargeData.Enabled == false then
-        if fireMode == aerial.enums.FIRE_MODE_AUTOMATIC and keyDown then
+        if fireMode.Automatic and keyDown then
             self:SetCurrentAttackName(id)
             self:SetCurrentAttackTime(attackTime)
-        elseif fireMode == aerial.enums.FIRE_MODE_SEMIAUTOMATIC then
+        elseif not fireMode.Automatic then
             self:SetNextAttack(id, attackTime)
         end
     else
-        if fireMode == aerial.enums.FIRE_MODE_AUTOMATIC and keyDown then
+        if fireMode.Automatic and keyDown then
             self:SetCurrentAttackName(id)
             self:SetCurrentAttackTime(attackTime)
-        elseif fireMode == aerial.enums.FIRE_MODE_SEMIAUTOMATIC then
+        elseif not fireMode.Automatic then
             self:SetCurrentAttackName("")
             self:SetCurrentAttackTime(0)
         end
@@ -120,7 +120,7 @@ function SWEP:AttackBulletTrace(id, attackData, index)
 end
 
 function SWEP:AttackBulletPreEffects(id)
-    if self:FireHook("AttackBulletPreEffects", id, attackData) then return end
+    if self:FireHook("AttackBulletPreEffects", id) then return end
 
     local data = self:GetAttackTable(id)
     if isstring(data.StartSound) then
@@ -165,5 +165,5 @@ function SWEP:AttackBulletEffects(id, attackData)
     end
 
     self:AttackEffectMuzzleFlash(id, attackData)
-    self:AttackEffectRecoil(id, data)
+    self:AttackEffectRecoil(id, attackData)
 end

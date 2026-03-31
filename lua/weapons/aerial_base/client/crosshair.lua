@@ -103,7 +103,5 @@ function SWEP:DoDrawCrosshair(x, y)
         surface.DrawRect(x - thicknessDot / 2, y - thicknessDot / 2, thicknessDot, thicknessDot)
     end
 
-
-
     return true
 end

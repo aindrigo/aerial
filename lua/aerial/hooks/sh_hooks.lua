@@ -1,4 +1,4 @@
-hook.Add("PlayerButtonDown", "aerialButtonDown", function(ply, button)
+hook.Add("PlayerButtonDown", "aerial_ButtonDown", function(ply, button)
     local code = ply:GetInfoNum("aerial_bind_firemode", 0)
     if code < 1 or button ~= code then return end
 
@@ -8,13 +8,13 @@ hook.Add("PlayerButtonDown", "aerialButtonDown", function(ply, button)
     wep:ToggleFireMode()
 end)
 
-hook.Add("PhysgunPickup", "aerialPhysgunPickup", function(ply, ent)
+hook.Add("PhysgunPickup", "aerial_PhysgunPickup", function(ply, ent)
     if ent:GetClass() == "aerial_projectile" then
         return false
     end
 end)
 
-hook.Add("EntityRemoved", "aerialEntityRemoved", function(ent, fullUpdate)
+hook.Add("EntityRemoved", "aerial_EntityRemoved", function(ent, fullUpdate)
     if not ent:IsWeapon() or not ent.Aerial or (CLIENT and fullUpdate) then return end
 
     local index = ent:EntIndex()
