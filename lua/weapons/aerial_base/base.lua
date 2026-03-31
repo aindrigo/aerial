@@ -27,6 +27,21 @@ SWEP.Primary.ClipSize = 12
 SWEP.Primary.DefaultClip = 12
 SWEP.Primary.MuzzleFlashColor = Color(201, 165, 112)
 
+SWEP.Primary.Spread = {}
+SWEP.Primary.Spread.Cone = 0.1
+SWEP.Primary.Spread.Min = -math.huge
+SWEP.Primary.Spread.Max = math.huge
+SWEP.Primary.Spread.ProlongedFireMult = 1.2
+SWEP.Primary.Spread.AimMult = 0.5
+SWEP.Primary.Spread.CrouchMult = 0.8
+SWEP.Primary.Spread.AirMult = 1.5
+SWEP.Primary.Spread.VelocityMult = 1.5
+
+SWEP.Primary.Punch = {}
+SWEP.Primary.Punch.AmountX = 0
+SWEP.Primary.Punch.AmountY = 2
+SWEP.Primary.Punch.Smooth = false
+
 -- Fire modes
 -- SWEP.Primary.FireModes = {
 --     [0] = aerial.enums.FIRE_MODE_AUTOMATIC, -- 0 is default
@@ -131,7 +146,7 @@ function SWEP:OnReloaded()
     end
 
     if istable(self._vmElements) then
-        for index, state in ipairs(self._vmElements) do
+        for _, state in ipairs(self._vmElements) do
             state.csModel:Remove()
         end
 

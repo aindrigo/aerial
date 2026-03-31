@@ -1,9 +1,6 @@
 local sin = math.sin
 local cos = math.cos
 
-SWEP.ViewModelOffsetPosition = vector_origin
-SWEP.ViewModelOffsetAngles = angle_zero
-
 function SWEP:GetViewModelPosition(eyePos, eyeAng)
     -- We have to use our own time-delta calculation because (Real)FrameTime seems to just not work properly in this hook
     -- Also, SysTime is much smoother
@@ -207,9 +204,31 @@ function SWEP:VMADS(ct, ft, matrix)
         return
     end
 
-    self.m_fADSFraction = Lerp(ft * (adsData.Speed or 12), self.m_fADSFraction or 0, targetFraction)
+    self.m_fADSFraction = Lerp(ft * 12 * (adsData.Speed or 1), self.m_fADSFraction or 0, targetFraction)
     matrix:Rotate(math.QuadraticBezier(self.m_fADSFraction, Angle(), adsData.MiddleAngles, angles))
     matrix:Translate(math.QuadraticBezier(self.m_fADSFraction, Vector(), adsData.MiddlePosition, position))
+end
+
+function SWEP:VMDrawElement(index, elementData, vm, flags)
+    local state = self._vmElements[index]
+    if not istable(state) then
+        state = {}
+        local csModel = ClientsideModel(elementData.Model)
+        csModel:SetParent(vm)
+        csModel:SetNoDraw(true)
+        if elementData.BoneMerge then
+            csModel:AddEffects(EF_BONEMERGE)
+        end
+
+        if elementData.Scale then
+            csModel:SetModelScale(elementData.Scale)
+        end
+
+        state.csModel = csModel
+        self._vmElements[index] = state
+    end
+
+    state.csModel:DrawModel(flags)
 end
 
 function SWEP:ViewModelDrawn(vm, flags)
@@ -218,10 +237,11 @@ function SWEP:ViewModelDrawn(vm, flags)
         self:VMDrawAttachment(name, data, vm, flags)
     end
 
-    -- local vmSettings = self.VMSettings or {}
-    -- if istable(vmSettings.Elements) then
-    --     for _, data in ipairs(vmSettings.Elements) do
-
-    --     end
-    -- end
+    local vmSettings = self.VMSettings or {}
+    if istable(vmSettings.Elements) then
+        self._vmElements = self._vmElements or {}
+        for index, elementData in ipairs(vmSettings.Elements) do
+            self:VMDrawElement(index, elementData, vm, flags)
+        end
+    end
 end

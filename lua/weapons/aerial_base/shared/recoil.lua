@@ -10,20 +10,20 @@ local y = math.ease.OutQuint(t) * 3
 y = y + math.cos(t * 8) * mx * 0.5
 ]]
 
-function SWEP.Primary.Recoil:Function( t )
+function SWEP.Primary.Recoil:Function(t)
     local spd = math.ease.OutQuart(t) * 2
     local et = math.ease.OutQuad(t)
 
-    local x = math.Clamp( math.sin(t * 9 + spd) * et, -0.8, 0.8 )
-    local y = math.ease.OutQuint( math.Clamp( t - 0.1, 0, 1 ) ) * 3
+    local x = math.Clamp(math.sin(t * 9 + spd) * et, -0.8, 0.8)
+    local y = math.ease.OutQuint(math.Clamp(t - 0.1, 0, 1)) * 3
 
     y = y + et * math.cos(t * 30) * 0.1
 
     return x, y
 end
 
-function SWEP:GetShotFrac( data )
-    return math.Clamp( self:GetShot() / data.ClipSize + 0.05, 0, 1 )
+function SWEP:GetShotFrac(data)
+    return math.Clamp(self:GetShot() / data.ClipSize + 0.05, 0, 1)
 end
 
 function SWEP:AttackCalculateRecoil(id, attackData)
@@ -36,22 +36,11 @@ function SWEP:AttackCalculateRecoil(id, attackData)
 
     local ply = attackData.Attacker
     local recoilData = data.Recoil or {}
-    local globalRecoilData = self.Recoil or {}
 
-    local x, y = recoilData:Function( self:GetShotFrac( data ) )
+    local x, y = recoilData:Function(self:GetShotFrac(data))
 
-    return Vector( y * recoilData.MultiplierY, 0, x * recoilData.MultiplierX )
+    return Vector(y * recoilData.MultiplierY, 0, x * recoilData.MultiplierX)
 end
-
-SWEP.Primary.Spread = {}
-SWEP.Primary.Spread.Cone = 0.1
-SWEP.Primary.Spread.Min = -math.huge
-SWEP.Primary.Spread.Max = math.huge
-SWEP.Primary.Spread.ProlongedFireMult = 1.2
-SWEP.Primary.Spread.AimMult = 0.5
-SWEP.Primary.Spread.CrouchMult = 0.8
-SWEP.Primary.Spread.AirMult = 1.5
-SWEP.Primary.Spread.VelocityMult = 1.5
 
 function SWEP:_GetSpreadModifier(data, spreadData)
     local ply = self:GetOwner()
@@ -80,26 +69,27 @@ function SWEP:AttackCalculateSpread(id, attackData, index)
         return hookResult
     end
 
-    local data = self:GetAttackTable( id )
+    local data = self:GetAttackTable(id)
     local ply = attackData.Attacker
     local spreadData = data.Spread or {}
 
     local mod = self:_GetSpreadModifier(data, spreadData)
-    local cone = Vector( spreadData.Cone, 0, spreadData.Cone )
-    cone:Mul( mod )
+    local cone = Vector(spreadData.Cone, 0, spreadData.Cone)
+    cone:Mul(mod)
 
     return Vector(
-        math.Clamp(util.SharedRandom("ARSX"..tostring(index)..ply:SteamID(), -cone.x, cone.x), spreadData.Min, spreadData.Max),
+        math.Clamp(util.SharedRandom("ARSX" .. tostring(index) .. ply:SteamID(), -cone.x, cone.x), spreadData.Min,
+            spreadData.Max),
         0,
-        math.Clamp(util.SharedRandom("ARSZ"..tostring(index)..ply:SteamID(), -cone.z, cone.z), spreadData.Min, spreadData.Max)
+        math.Clamp(util.SharedRandom("ARSZ" .. tostring(index) .. ply:SteamID(), -cone.z, cone.z), spreadData.Min,
+            spreadData.Max)
     )
 end
 
-
-function SWEP:ThinkRecoil( attackID, attackData )
+function SWEP:ThinkRecoil(attackId, attackData)
     if self:GetShot() > 0 then
-        if CurTime() > ( self:LastShootTime() + attackData.Recoil.RestTime ) then
-            self:SetShot( self:GetShot() - 1 )
+        if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
+            self:SetShot(self:GetShot() - 1)
         end
     end
 end
@@ -107,19 +97,13 @@ end
 function SWEP:ThinkCustomRecoil()
 end
 
-function SWEP:GetFinalShotPlacement( id, attackData, index )
+function SWEP:GetFinalShotPlacement(id, attackData, index)
     local
-    pos = self:AttackCalculateRecoil( id, attackData )
-    pos = pos + self:AttackCalculateSpread( id, attackData, index )
+    pos = self:AttackCalculateRecoil(id, attackData)
+    pos = pos + self:AttackCalculateSpread(id, attackData, index)
 
     return pos
 end
-
-
-SWEP.Primary.Punch = {}
-SWEP.Primary.Punch.AmountX = 0
-SWEP.Primary.Punch.AmountY = 2
-SWEP.Primary.Punch.Smooth = false
 
 function SWEP:AttackEffectRecoil(id, attackData)
     if self:FireHook("AttackEffectRecoil", id, attackData) then return end
@@ -127,19 +111,19 @@ function SWEP:AttackEffectRecoil(id, attackData)
     local data = self:GetAttackTable(id)
     local ply = self:GetOwner()
 
-    local ang = Angle( -attackData.Punch.AmountY, attackData.Punch.AmountX, 0 )
+    local ang = Angle(-data.Punch.AmountY, data.Punch.AmountX, 0)
 
-    if attackData.Punch.Smooth then
-        ply:SetViewPunchVelocity( ang )
+    if data.Punch.Smooth then
+        ply:SetViewPunchVelocity(ang)
     else
-        ply:SetViewPunchAngles( ang )
+        ply:SetViewPunchAngles(ang)
     end
 end
 
-function SWEP:VMRecoilADS( ct, ft, muzzle, matrix, attackData, recoil )
+function SWEP:VMRecoilADS(ct, ft, muzzle, matrix, attackData, recoil)
     local lerpSpeed = 16
 
-    if CurTime() > ( self:LastShootTime() + attackData.Recoil.RestTime ) then
+    if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
         recoil.z = 0 -- reset
         recoil.x = 0
         lerpSpeed = 4
@@ -148,8 +132,8 @@ function SWEP:VMRecoilADS( ct, ft, muzzle, matrix, attackData, recoil )
         recoil.x = -recoil.x * 0.4
     end
 
-    local desiredPos = Vector( 0, recoil.z * 0.6, -recoil.x * 0.6 )
-    local desiredAngles = Angle( recoil.x, recoil.z, 0 )
+    local desiredPos = Vector(0, recoil.z * 0.6, -recoil.x * 0.6)
+    local desiredAngles = Angle(recoil.x, recoil.z, 0)
 
     local smoothPos = self.m_aCurrentRecoilPosition or desiredPos
     local smoothAngles = self.m_aCurrentRecoilAngles or desiredAngles
@@ -160,24 +144,24 @@ function SWEP:VMRecoilADS( ct, ft, muzzle, matrix, attackData, recoil )
     self.m_aCurrentRecoilPosition = smoothPos
     self.m_aCurrentRecoilAngles = smoothAngles
 
-    matrix:Translate( smoothPos )
-    matrix:Translate( muzzle.Pos )
-    matrix:Rotate( smoothAngles )
-    matrix:Translate( -muzzle.Pos )
+    matrix:Translate(smoothPos)
+    matrix:Translate(muzzle.Pos)
+    matrix:Rotate(smoothAngles)
+    matrix:Translate(-muzzle.Pos)
 end
 
 function SWEP:VMRecoil(ct, ft, muzzle, matrix)
     local id = self:GetLastAttackName()
     local attackData = self:GetLastAttackTable()
-    local recoil = self:AttackCalculateRecoil( id, attackData )
+    local recoil = self:AttackCalculateRecoil(id, attackData)
 
     if self:GetADS() then
-        self:VMRecoilADS( ct, ft, muzzle, matrix, attackData, recoil )
+        self:VMRecoilADS(ct, ft, muzzle, matrix, attackData, recoil)
         return
     end
 
     local lerpSpeed = 16
-    if CurTime() > ( self:LastShootTime() + attackData.Recoil.RestTime ) then
+    if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
         recoil.z = 0 -- reset
         recoil.x = 0
         lerpSpeed = 4
@@ -186,7 +170,7 @@ function SWEP:VMRecoil(ct, ft, muzzle, matrix)
         recoil.x = -recoil.x * 0.5
     end
 
-    local desiredAngles = Angle( recoil.x, recoil.z, 0 )
+    local desiredAngles = Angle(recoil.x, recoil.z, 0)
     local smoothAngles = self.m_aCurrentRecoilAngles or desiredAngles
     smoothAngles = aerial.math.Lerp(ft * lerpSpeed, smoothAngles, desiredAngles)
 
