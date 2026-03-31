@@ -23,9 +23,6 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     matrix:SetTranslation(eyePos)
     matrix:SetAngles(eyeAng)
 
-    matrix:Translate( self.ViewModelOffsetPosition )
-    matrix:Rotate( self.ViewModelOffsetAngles )
-
     local moveSpeed = self:GetOwnerSpeed()
 
     -- Calculations
@@ -34,16 +31,18 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     self:VMRecoil(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
-    if ( type(self.VMOffset) == "table" ) then
-        if ( type(self.VMOffset.Position) == "Vector" ) then
-            matrix:Translate(self.VMOffset.Position)
+    -- Offset
+    local vmSettings = self.VMSettings or {}
+    if istable(vmSettings.Offset) then
+        local offset = vmSettings.Offset
+        if isvector(offset.Position) then
+            matrix:Translate(offset.Position)
         end
 
-        if ( type(self.VMOffset.Angles) == "Angle" ) then
-            matrix:Rotate(self.VMOffset.Angles)
+        if isangle(offset.Angles) then
+            matrix:Rotate(offset.Angles)
         end
     end
-
 
     eyePos, eyeAng = matrix:GetTranslation(), matrix:GetAngles()
     self.m_fLastCurTime = ct
