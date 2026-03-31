@@ -125,35 +125,43 @@ function SWEP:OnReloaded()
 
     local attachments = aerial.Attachments.Data[self:EntIndex()]
     if istable(attachments) then
-        for name, data in pairs(attachments) do
+        for name, _ in pairs(attachments) do
             self:_RefreshAttachmentOverrides(name)
         end
+    end
+
+    if istable(self._vmElements) then
+        for index, state in ipairs(self._vmElements) do
+            state.csModel:Remove()
+        end
+
+        self._vmElements = {}
     end
 end
 
 function SWEP:SetupDataTables()
     self:FireHook("SetupDataTables")
 
-    self:NetworkVar("Float", "IdleTime") -- Used to get next idle time
-    self:NetworkVar("Float", "ReloadTime") -- Used to check reload end time/next bullet insert
-    self:NetworkVar("Float", "ReloadStartTime") -- Used for reload camera
-    self:NetworkVar("Float", "ReloadEndTime") -- Used for reload camera
-    self:NetworkVar("Float", "FireModeTime") -- Used to delay attacks/reload after setting firemode
-    self:NetworkVar("Float", "CurrentAttackTime") -- Used for delayed/automatic attacks
-    self:NetworkVar("Int", "PrimaryFireMode") -- Firemode for primary
-    self:NetworkVar("Int", "SecondaryFireMode") -- Firemode for secondary
-    self:NetworkVar("Int", "CustomRecoilMode") -- Recoil mode, see aerial.enums.CUSTOM_RECOIL_MODE
+    self:NetworkVar("Float", "IdleTime")                    -- Used to get next idle time
+    self:NetworkVar("Float", "ReloadTime")                  -- Used to check reload end time/next bullet insert
+    self:NetworkVar("Float", "ReloadStartTime")             -- Used for reload camera
+    self:NetworkVar("Float", "ReloadEndTime")               -- Used for reload camera
+    self:NetworkVar("Float", "FireModeTime")                -- Used to delay attacks/reload after setting firemode
+    self:NetworkVar("Float", "CurrentAttackTime")           -- Used for delayed/automatic attacks
+    self:NetworkVar("Int", "PrimaryFireMode")               -- Firemode for primary
+    self:NetworkVar("Int", "SecondaryFireMode")             -- Firemode for secondary
+    self:NetworkVar("Int", "CustomRecoilMode")              -- Recoil mode, see aerial.enums.CUSTOM_RECOIL_MODE
     self:NetworkVar("Int", "Shot")
-    self:NetworkVar("String", "ReloadName") -- Name for attack table when finishing reload
-    self:NetworkVar("String", "LastAttackName") -- Used for reloading, changing firemode, etc
-    self:NetworkVar("String", "CurrentAttackName") -- See CurrentAttackTime
-    self:NetworkVar("Bool", "ADS") -- ADS state
-    self:NetworkVar("Bool", "Reloading") -- To check if reloading or not
-    self:NetworkVar("Bool", "ReloadFinished") -- To check if reload has finished, used in bullet by bullet reload
-    self:NetworkVar("Vector", "CustomRecoilPosition") -- Custom recoil values, used for firing when aiming downsights
+    self:NetworkVar("String", "ReloadName")                 -- Name for attack table when finishing reload
+    self:NetworkVar("String", "LastAttackName")             -- Used for reloading, changing firemode, etc
+    self:NetworkVar("String", "CurrentAttackName")          -- See CurrentAttackTime
+    self:NetworkVar("Bool", "ADS")                          -- ADS state
+    self:NetworkVar("Bool", "Reloading")                    -- To check if reloading or not
+    self:NetworkVar("Bool", "ReloadFinished")               -- To check if reload has finished, used in bullet by bullet reload
+    self:NetworkVar("Vector", "CustomRecoilPosition")       -- Custom recoil values, used for firing when aiming downsights
     self:NetworkVar("Vector", "CustomRecoilTargetPosition") -- Self-explanatory
-    self:NetworkVar("Angle", "CustomRecoilAngles") -- Self-explanatory
-    self:NetworkVar("Angle", "CustomRecoilTargetAngles") -- Self-explanatory
+    self:NetworkVar("Angle", "CustomRecoilAngles")          -- Self-explanatory
+    self:NetworkVar("Angle", "CustomRecoilTargetAngles")    -- Self-explanatory
 
     --[[
     for id, data in pairs(self:GetAttackTables()) do
