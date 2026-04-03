@@ -98,6 +98,15 @@ function SWEP:Attack(id)
     end
 end
 
+function SWEP:AttackCancel(id)
+    local data = self:GetAttackTable(id)
+    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
+
+    if attackType == aerial.enums.ATTACK_TYPE_BULLET then
+        self:AttackBulletCancel(id)
+    end
+end
+
 function SWEP:AttackHitEntity(id, attackData, traceResult)
     if self:FireHook("AttackHitEntity", id, attackData) then return end
 

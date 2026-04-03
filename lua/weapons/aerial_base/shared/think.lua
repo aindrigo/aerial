@@ -42,6 +42,11 @@ function SWEP:ThinkAttack(id, key)
     if canAttack and ply:KeyPressed(key) and (self:GetCurrentAttackTime() < 1 or self:GetCurrentAttackName() == "") then
         self:Attack(id)
     elseif self:GetCurrentAttackName() == id and not canAttack then
+        if istable(chargeData) and chargeData.Type == aerial.enums.CHARGE_TYPE_HOLD and isstring(chargeData.CancelSound) then
+            self:EmitSound(chargeData.CancelSound)
+        end
+
+        self:AttackCancel(id)
         self:SetCurrentAttackTime(0)
         self:SetCurrentAttackName("")
     end

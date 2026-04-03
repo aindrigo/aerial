@@ -15,16 +15,18 @@ function SWEP:CanReload()
     end
 
     return not self:GetReloading() and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime() and
-    ct > self:GetCurrentAttackTime()
+        ct > self:GetCurrentAttackTime()
 end
 
 function SWEP:Reload()
     if self:FireHook("Reload") or not self:CanReload() then return end
+
     self:ReloadAttack(self:GetLastAttackName())
 end
 
 function SWEP:CanReloadAttack(id)
-    if self:FireHook("CanReloadAttack", id) == false then return false end
+    local hookResult = self:FireHook("CanReloadAttack", id)
+    if isbool(hookResult) then return hookResult end
 
     local data = self:GetAttackTable(id)
 

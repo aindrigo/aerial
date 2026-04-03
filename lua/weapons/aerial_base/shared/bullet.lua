@@ -123,8 +123,9 @@ function SWEP:AttackBulletPreEffects(id)
     if self:FireHook("AttackBulletPreEffects", id) then return end
 
     local data = self:GetAttackTable(id)
-    if isstring(data.StartSound) then
-        self:EmitSound(data.StartSound)
+    local chargeData = data.Charge
+    if istable(chargeData) and isstring(chargeData.StartSound) then
+        self:EmitSound(chargeData.StartSound)
     end
 end
 
@@ -136,7 +137,16 @@ function SWEP:AttackBulletEffects(id, attackData)
     local ply = attackData.Attacker
     ply:SetAnimation(PLAYER_ATTACK1)
 
-    self:EmitSound(data.Sound, SNDLVL_GUNFIRE)
+    if isstring(data.SoundLooping) then
+        self._loopingAttackSounds = self._loopingAttackSounds or {}
+        if not self._loopingAttackSounds[id] then
+            local snd = CreateSound(self, data.SoundLooping)
+            snd:Play()
+            self._loopingAttackSounds[id] = snd
+        end
+    elseif isstring(data.Sound) then
+        self:EmitSound(data.Sound, SNDLVL_GUNFIRE)
+    end
 
     local customRecoil = data.CustomRecoil or {}
     if (self:GetADS() and not data.ShootAnimationADS) or customRecoil.Always then
@@ -165,4 +175,16 @@ function SWEP:AttackBulletEffects(id, attackData)
 
     self:AttackEffectMuzzleFlash(id, attackData)
     self:AttackEffectRecoil(id, attackData)
+end
+
+function SWEP:AttackBulletCancel(id)
+    local data = self:GetAttackTable(id)
+    if isstring(data.SoundLooping) then
+        self._loopingAttackSounds = self._loopingAttackSounds or {}
+        if self._loopingAttackSounds[id] then
+            local snd = self._loopingAttackSounds[id]
+            snd:Stop()
+            self._loopingAttackSounds[id] = nil
+        end
+    end
 end
