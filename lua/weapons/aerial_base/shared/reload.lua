@@ -14,7 +14,8 @@ function SWEP:CanReload()
         end
     end
 
-    return not self:GetReloading() and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime() and ct > self:GetCurrentAttackTime()
+    return not self:GetReloading() and ct >= self:GetReloadTime() and ct >= self:GetFireModeTime() and
+    ct > self:GetCurrentAttackTime()
 end
 
 function SWEP:Reload()
@@ -48,7 +49,6 @@ function SWEP:ReloadAttack(id)
     local currentMagazine = self:GetAttackMagazineCount(id)
 
     local reloadMode = data.ReloadMode or aerial.enums.RELOAD_MODE_NORMAL
-    local reloadAnimation = nil
 
     self:SetReloadName(id)
 
@@ -137,5 +137,4 @@ function SWEP:ReloadAttackTimer(id)
         self:SetReloadTime(ct + self:PlayAnimation(data.InsertBulletAnimation or ACT_VM_RELOAD))
         self:QueueIdle()
     end
-    
 end

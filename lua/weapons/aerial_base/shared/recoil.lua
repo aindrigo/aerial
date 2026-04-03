@@ -1,8 +1,3 @@
-SWEP.Primary.Recoil = {}
-SWEP.Primary.Recoil.MultiplierX = 2
-SWEP.Primary.Recoil.MultiplierY = 2
-SWEP.Primary.Recoil.RestTime = 1
-
 --[[ ?
 local mx = math.ease.OutQuad(t)
 local x = math.Clamp( math.sin(t * 8) * mx, -0.7, 0.7 )
@@ -22,6 +17,8 @@ function SWEP.Primary.Recoil:Function(t)
     return x, y
 end
 
+SWEP.Secondary.Recoil.Function = SWEP.Primary.Recoil.Function
+
 function SWEP:GetShotFrac(data)
     return math.Clamp(self:GetShot() / data.ClipSize + 0.05, 0, 1)
 end
@@ -33,8 +30,6 @@ function SWEP:AttackCalculateRecoil(id, attackData)
     end
 
     local data = self:GetAttackTable(id)
-
-    local ply = attackData.Attacker
     local recoilData = data.Recoil or {}
 
     local x, y = recoilData:Function(self:GetShotFrac(data))

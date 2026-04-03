@@ -37,6 +37,11 @@ SWEP.Primary.Spread.CrouchMult = 0.8
 SWEP.Primary.Spread.AirMult = 1.5
 SWEP.Primary.Spread.VelocityMult = 1.5
 
+SWEP.Primary.Recoil = {}
+SWEP.Primary.Recoil.MultiplierX = 2
+SWEP.Primary.Recoil.MultiplierY = 2
+SWEP.Primary.Recoil.RestTime = 1
+
 SWEP.Primary.Punch = {}
 SWEP.Primary.Punch.AmountX = 0
 SWEP.Primary.Punch.AmountY = 2
@@ -57,6 +62,10 @@ SWEP.Secondary.Automatic = false
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.ShootAnimation = ACT_VM_SECONDARYATTACK
+
+SWEP.Secondary.Spread = SWEP.Primary.Spread
+SWEP.Secondary.Recoil = SWEP.Primary.Recoil
+SWEP.Secondary.Punch = SWEP.Primary.Punch
 
 SWEP.Hooks = {}
 SWEP.ADS = {}

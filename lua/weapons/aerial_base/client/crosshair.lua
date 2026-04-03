@@ -1,5 +1,5 @@
 function SWEP:GetCrosshairAlpha()
-    if self:GetReloading() or self:GetADS() then return 0 end
+    if self:GetReloading() or (self:GetADS() and istable(self.ADS) and not self.ADS.Crosshair) then return 0 end
 
     return aerial.console.crosshair.colorAlpha:GetInt()
 end
@@ -21,7 +21,7 @@ end
 
 local lastx = 0
 local lasty = 0
-function SWEP:GetCrosshairPos( x, y )
+function SWEP:GetCrosshairPos(x, y)
     local id = self:GetLastAttackName()
     local attackData = self:GetLastAttackTable()
 
@@ -30,7 +30,7 @@ function SWEP:GetCrosshairPos( x, y )
     end
 
     local lerpSpeed = 16
-    local recoil = self:AttackCalculateRecoil( id, attackData )
+    local recoil = self:AttackCalculateRecoil(id, attackData)
     if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
         recoil.z = 0 -- reset
         recoil.x = 0
@@ -40,8 +40,8 @@ function SWEP:GetCrosshairPos( x, y )
         recoil.x = -recoil.x * 14
     end
 
-    recoil.z = Lerp( FrameTime() * lerpSpeed, lastx, recoil.z )
-    recoil.x = Lerp( FrameTime() * lerpSpeed, lasty, recoil.x )
+    recoil.z = Lerp(FrameTime() * lerpSpeed, lastx, recoil.z)
+    recoil.x = Lerp(FrameTime() * lerpSpeed, lasty, recoil.x)
     lastx = recoil.z
     lasty = recoil.x
 
@@ -49,7 +49,7 @@ function SWEP:GetCrosshairPos( x, y )
 end
 
 function SWEP:DoDrawCrosshair(x, y)
-    x, y = self:GetCrosshairPos( x, y )
+    x, y = self:GetCrosshairPos(x, y)
 
     local ft = FrameTime()
     local length = aerial.console.crosshair.length:GetFloat()
@@ -79,7 +79,8 @@ function SWEP:DoDrawCrosshair(x, y)
         aerial.ui.DrawLine(x, y - gap, x, y - gap - length, outlineThickness)
     end
 
-    local red, green, blue = aerial.console.crosshair.colorRed:GetInt(), aerial.console.crosshair.colorGreen:GetInt(), aerial.console.crosshair.colorBlue:GetInt()
+    local red, green, blue = aerial.console.crosshair.colorRed:GetInt(), aerial.console.crosshair.colorGreen:GetInt(),
+        aerial.console.crosshair.colorBlue:GetInt()
     surface.SetDrawColor(red, green, blue, alpha)
 
     aerial.ui.DrawLine(x + gap, y, x + gap + length, y, thickness)
@@ -95,7 +96,8 @@ function SWEP:DoDrawCrosshair(x, y)
             local outlineThickness = thicknessDot + outline
 
             surface.SetDrawColor(0, 0, 0, alpha)
-            surface.DrawRect(x - (thicknessDot + outline) / 2, y - (thicknessDot + outline) / 2, outlineThickness, outlineThickness)
+            surface.DrawRect(x - (thicknessDot + outline) / 2, y - (thicknessDot + outline) / 2, outlineThickness,
+                outlineThickness)
             surface.SetDrawColor(red, green, blue, alpha)
         end
 

@@ -1,4 +1,6 @@
 function SWEP:Think()
+    self:FireHook("Think")
+
     self:ThinkIdle()
     self:ThinkAttacks()
     self:ThinkADS()
@@ -24,12 +26,13 @@ function SWEP:ThinkAttack(id, key)
     if attackType == aerial.enums.ATTACK_TYPE_NONE then return end
 
     if istable(self.ADS) and self.ADS.Enabled ~= false and (self.ADS.Key or IN_ATTACK2) == key then
-        aerial.dprint("Warning: conflicting keys for ironsights and attack "..id)
+        aerial.dprint("Warning: conflicting keys for ironsights and attack " .. id)
     end
 
     local canAttack = self:CanAttack(id)
-
+    local attackTime = self:GetCurrentAttackTime()
     local chargeData = data.Charge
+
     if istable(chargeData) then
         local chargeType = chargeData.Type or aerial.enums.CHARGE_TYPE_RELEASE
         if chargeType ~= aerial.enums.CHARGE_TYPE_RELEASE then
@@ -37,14 +40,14 @@ function SWEP:ThinkAttack(id, key)
         end
     end
 
-    if canAttack and ply:KeyPressed(key) and (self:GetCurrentAttackTime() < 1 or self:GetCurrentAttackName() == "") then
+    if canAttack and ply:KeyPressed(key) and (attackTime < 1 or self:GetCurrentAttackName() == "") then
         self:Attack(id)
     elseif self:GetCurrentAttackName() == id and not canAttack then
         self:SetCurrentAttackTime(0)
         self:SetCurrentAttackName("")
     end
 
-    self:ThinkRecoil( id, data )
+    self:ThinkRecoil(id, data)
 end
 
 function SWEP:ThinkADS()
@@ -114,8 +117,7 @@ function SWEP:ThinkCurrentAttack()
     if istable(chargeData) then
         local chargeType = chargeData.Type or aerial.enums.CHARGE_TYPE_RELEASE
         if chargeType == aerial.enums.CHARGE_TYPE_RELEASE then
-            if ply:KeyDown(self:GetAttackKey(data)) then return end
-
+            if ply:KeyDown(self:GetAttackKey(data)) and not (isnumber(chargeData.HoldTime) and (attackTime + chargeData.HoldTime) < ct) then return end
         elseif chargeType == aerial.enums.CHARGE_TYPE_HOLD then
             if attackTime > ct then return end
         end
@@ -126,11 +128,17 @@ function SWEP:ThinkCurrentAttack()
     end
 
     local attackData = self:BuildAttackData(attackName)
-    if charge then
-        attackData.Charge = {
+    if istable(chargeData) and chargeData.Enabled ~= false then
+        local data = {
             Start = self:GetCurrentAttackTime(),
             End = ct
         }
+
+        if chargeData.Type == aerial.enums.CHARGE_TYPE_RELEASE and isnumber(chargeData.HoldTime) then
+            data.Fraction = math.max(math.min(data.End - data.Start, chargeData.HoldTime) / chargeData.HoldTime, 0)
+        end
+
+        attackData.Charge = data
     end
 
     if attackType == aerial.enums.ATTACK_TYPE_MELEE then

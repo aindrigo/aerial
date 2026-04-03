@@ -12,7 +12,7 @@ function SWEP:AttackBulletPerform(id, attackData)
 
     local magazineCount = self:GetAttackMagazineCount(id)
     attackData.Delay = attackData.Delay or data.Delay or 0.1
-    
+
     local fireMode = self:GetAttackFireModeData(id, self:GetAttackFireMode(id))
     local chargeData = data.Charge
 
@@ -21,6 +21,8 @@ function SWEP:AttackBulletPerform(id, attackData)
 
     local key = self:GetAttackKey(data)
     local keyDown = ply:KeyDown(key)
+
+    local attackTime = self:GetCurrentAttackTime()
 
     if not istable(chargeData) or chargeData.Enabled == false then
         if fireMode.Automatic and keyDown then
@@ -52,15 +54,15 @@ function SWEP:AttackBulletPerform(id, attackData)
         return
     end
 
-    self:AttackTakeAmmo(id, 1)
+    self:AttackTakeAmmo(id, attackData, attackData.AmmoPenalty or 1)
 
     attackData.Delay = delay
     attackData.Damage = data.Damage
     attackData.DamageType = attackData.DamageType or data.DamageType or DMG_BULLET
     attackData.Traces = {}
 
-    self:SetShot( self:GetShot() + 1 )
-    self:SetLastShootTime( CurTime() ) -- HACK
+    self:SetShot(self:GetShot() + 1)
+    self:SetLastShootTime(CurTime()) -- HACK
 
     ply:LagCompensation(true)
     for i = 1, (data.ShotCount or 1) do
@@ -144,7 +146,6 @@ function SWEP:AttackBulletEffects(id, attackData)
             self:PlayAnimation(data.ShootAnimation or ACT_VM_PRIMARYATTACK)
             self:QueueIdle()
         end
-
     else
         self:PlayAnimation(attackData.Animation or data.ShootAnimation or ACT_VM_PRIMARYATTACK)
         self:QueueIdle()

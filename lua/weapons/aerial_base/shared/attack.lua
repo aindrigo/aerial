@@ -1,20 +1,20 @@
 function SWEP:GetNextAttack(id)
-    local func = self["GetNext"..id.."Fire"]
+    local func = self["GetNext" .. id .. "Fire"]
     return func(self)
 end
 
 function SWEP:SetNextAttack(id, value)
-    local func = self["SetNext"..id.."Fire"]
+    local func = self["SetNext" .. id .. "Fire"]
     return func(self, value)
 end
 
 function SWEP:GetLastAttack(id)
-    local func = self["GetLast"..id.."Fire"]
+    local func = self["GetLast" .. id .. "Fire"]
     return func(self)
 end
 
 function SWEP:SetLastAttack(id, value)
-    local func = self["SetLast"..id.."Fire"]
+    local func = self["SetLast" .. id .. "Fire"]
     return func(self, value)
 end
 
@@ -34,7 +34,9 @@ function SWEP:BuildAttackData(id)
     return attackData
 end
 
-function SWEP:AttackTakeAmmo(id, count)
+function SWEP:AttackTakeAmmo(id, attackData, count)
+    if self:FireHook("AttackTakeAmmo", id, attackData, count) then return end
+
     local data = self:GetAttackTable(id)
     local flags = data.Flags or 0
 

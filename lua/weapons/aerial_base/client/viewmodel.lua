@@ -9,9 +9,6 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
 
     local ft = (ct - self.m_fLastCurTime) * GetConVar("host_timescale"):GetFloat()
 
-    local ply = self:GetOwner()
-    local vm = self:VM()
-
     -- Find muzzle
     local muzzleAttachment = self:GetMuzzleAttachment()
 

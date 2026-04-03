@@ -34,7 +34,7 @@ function SWEP:AttackProjectilePerform(id, attackData)
         ent:Spawn()
     end
 
-    self:AttackTakeAmmo(id, 1)
+    self:AttackTakeAmmo(id, attackData, attackData.AmmoPenalty or 1)
     self:AttackProjectileEffects(id, attackData)
 end
 
