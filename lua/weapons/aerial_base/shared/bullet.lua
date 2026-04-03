@@ -22,8 +22,6 @@ function SWEP:AttackBulletPerform(id, attackData)
     local key = self:GetAttackKey(data)
     local keyDown = ply:KeyDown(key)
 
-    local attackTime = self:GetCurrentAttackTime()
-
     if not istable(chargeData) or chargeData.Enabled == false then
         if fireMode.Automatic and keyDown then
             self:SetCurrentAttackName(id)

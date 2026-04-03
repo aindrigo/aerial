@@ -30,7 +30,6 @@ function SWEP:ThinkAttack(id, key)
     end
 
     local canAttack = self:CanAttack(id)
-    local attackTime = self:GetCurrentAttackTime()
     local chargeData = data.Charge
 
     if istable(chargeData) then
@@ -40,7 +39,7 @@ function SWEP:ThinkAttack(id, key)
         end
     end
 
-    if canAttack and ply:KeyPressed(key) and (attackTime < 1 or self:GetCurrentAttackName() == "") then
+    if canAttack and ply:KeyPressed(key) and (self:GetCurrentAttackTime() < 1 or self:GetCurrentAttackName() == "") then
         self:Attack(id)
     elseif self:GetCurrentAttackName() == id and not canAttack then
         self:SetCurrentAttackTime(0)
@@ -114,7 +113,7 @@ function SWEP:ThinkCurrentAttack()
 
     local chargeData = data.Charge
 
-    if istable(chargeData) then
+    if istable(chargeData) and chargeData.Enabled ~= false then
         local chargeType = chargeData.Type or aerial.enums.CHARGE_TYPE_RELEASE
         if chargeType == aerial.enums.CHARGE_TYPE_RELEASE then
             if ply:KeyDown(self:GetAttackKey(data)) and not (isnumber(chargeData.HoldTime) and (attackTime + chargeData.HoldTime) < ct) then return end
