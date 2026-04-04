@@ -14,7 +14,11 @@ function SWEP:FindMuzzleAttachment()
     end
 
     local vmSettings = self.VMSettings or {}
-    if not IsValid( self:GetOwner() ) then return end
+    if istable(vmSettings.MuzzleOffset) then
+        return { Pos = vmSettings.MuzzleOffset.Position, Ang = vmSettings.MuzzleOffset.Angles }
+    end
+
+    if not IsValid(self:GetOwner()) then return end
 
     local vm = self:VM()
     local dummy = ClientsideModel(vm:GetModel(), RENDERGROUP_VIEWMODEL)
@@ -31,7 +35,7 @@ function SWEP:FindMuzzleAttachment()
         muzzleAttachment.Ang = Angle(0, 0, 0)
         muzzleAttachment.Bone = 0
 
-        aerial.dprint("Warning: muzzle attachment "..muzzleAttachmentName.." not found")
+        aerial.dprint("Warning: muzzle attachment " .. muzzleAttachmentName .. " not found")
         return muzzleAttachment
     end
 
@@ -66,7 +70,7 @@ function SWEP:GetRealMuzzleAttachment()
         muzzleAttachment.Ang = Angle(0, 0, 0)
         muzzleAttachment.Bone = 0
 
-        aerial.dprint("Warning: muzzle attachment "..muzzleAttachmentName.." not found")
+        aerial.dprint("Warning: muzzle attachment " .. muzzleAttachmentName .. " not found")
     end
 
 

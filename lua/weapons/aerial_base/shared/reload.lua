@@ -58,8 +58,8 @@ function SWEP:ReloadAttack(id)
     if reloadMode == aerial.enums.RELOAD_MODE_NORMAL then
         local normalReloadAnimation = data.ReloadAnimation or ACT_VM_RELOAD
         local reloadAnimation = normalReloadAnimation
-        if currentMagazine <= 0 then
-            reloadAnimation = data.EmptyReloadAnimation or normalReloadAnimation
+        if currentMagazine <= 0 and data.EmptyReloadAnimation ~= nil then
+            reloadAnimation = data.EmptyReloadAnimation
         end
 
         local endTime = ct + self:PlayAnimation(reloadAnimation)

@@ -13,7 +13,6 @@ function SWEP:DrawAttachmentHUD(name, data)
     end
 end
 
-
 function SWEP:DrawDeveloperHUD()
     local y = 48
     surface.SetTextPos(48, y)
@@ -25,17 +24,18 @@ function SWEP:DrawDeveloperHUD()
     surface.SetTextColor(color_white)
     surface.SetTextPos(48, y)
     surface.SetFont("aerial24")
-    surface.DrawText("Version "..tostring(aerial.version[1]).."."..tostring(aerial.version[2]).."."..tostring(aerial.version[3]))
+    surface.DrawText("Version " ..
+        tostring(aerial.version[1]) .. "." .. tostring(aerial.version[2]) .. "." .. tostring(aerial.version[3]))
 
     y = y + 24
     surface.SetTextPos(48, y)
     surface.SetFont("aerial24")
-    surface.DrawText("Last Attack: "..self:GetLastAttackName())
+    surface.DrawText("Last Attack: " .. self:GetLastAttackName())
 
     y = y + 24
     surface.SetTextPos(48, y)
     surface.SetFont("aerial24")
-    surface.DrawText("Shot: "..self:GetShot())
+    surface.DrawText("Shot: " .. self:GetShot())
 
     y = y + 48
 
@@ -50,30 +50,31 @@ function SWEP:DrawDeveloperHUD()
 
         surface.SetFont("aerial24")
         surface.SetTextPos(48, y)
-        surface.DrawText("Damage: "..tostring(attackData.Damage))
+        surface.DrawText("Damage: " .. tostring(attackData.Damage))
         y = y + 24
 
         local spreadData = attackData.Spread or {}
         surface.SetTextPos(48, y)
-        surface.DrawText("Cone: "..tostring(spreadData.Cone or 0))
+        surface.DrawText("Cone: " .. tostring(spreadData.Cone or 0))
         y = y + 24
 
         self.m_tLastAttacks = self.m_tLastAttacks or {}
         local lastAttack = self.m_tLastAttacks[name] or {}
 
         surface.SetTextPos(48, y)
-        surface.DrawText("Last Spread: "..tostring(lastAttack.Spread or vector_origin))
+        surface.DrawText("Last Spread: " .. tostring(lastAttack.Spread or vector_origin))
         y = y + 24
 
         surface.SetTextPos(48, y)
-        surface.DrawText("Shot Fraction: "..self:GetShotFrac( attackData ))
+        surface.DrawText("Shot Fraction: " .. self:GetShotFrac(attackData))
 
         y = y + 48
     end
-
 end
 
 function SWEP:DrawHUD()
+    self:FireHook("DrawHUD")
+
     if aerial.console.debug:GetBool() then
         self:DrawDeveloperHUD()
     end

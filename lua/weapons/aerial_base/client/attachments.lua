@@ -34,13 +34,13 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         local bone = vm:LookupBone(cosmeticData.Bone)
 
         if not bone then
-            aerial.dprint("No such bone "..cosmeticData.Bone)
+            aerial.dprint("No such bone " .. cosmeticData.Bone)
             return
         end
 
         matrix = vm:GetBoneMatrix(bone)
         if not matrix then
-            aerial.dprint("Could not get bone matrix for "..cosmeticData.Bone)
+            aerial.dprint("Could not get bone matrix for " .. cosmeticData.Bone)
             return
         end
     else
@@ -125,7 +125,7 @@ function SWEP:VMDrawRenderTarget(name, data, vm, model, renderTargetData)
     render.OverrideAlphaWriteEnable(false, false)
 
     if renderTargetData.SubMaterial then
-        model:SetSubMaterial(renderTargetData.SubMaterial, "!"..aerial.renderTarget.material:GetName())
+        model:SetSubMaterial(renderTargetData.SubMaterial, "!" .. aerial.renderTarget.material:GetName())
     end
 end
 

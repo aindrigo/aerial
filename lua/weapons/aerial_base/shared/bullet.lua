@@ -39,7 +39,8 @@ function SWEP:AttackBulletPerform(id, attackData)
         end
     end
 
-    if magazineCount < 1 then
+    local ammoPenalty = attackData.AmmoPenalty or data.AmmoPenalty or 1
+    if magazineCount < ammoPenalty then
         if data.EmptyAnimation then
             self:PlayAnimation(data.EmptyAnimation)
             self:QueueIdle()
@@ -52,7 +53,7 @@ function SWEP:AttackBulletPerform(id, attackData)
         return
     end
 
-    self:AttackTakeAmmo(id, attackData, attackData.AmmoPenalty or 1)
+    self:AttackTakeAmmo(id, attackData, ammoPenalty)
 
     attackData.Delay = delay
     attackData.Damage = data.Damage

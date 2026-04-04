@@ -33,8 +33,8 @@ end
 -- @string dirPath The directory path
 -- @realm shared
 function aerial.includeDirectory(dirPath)
-    for _, fileName in ipairs(file.Find(dirPath.."/*.lua", "LUA")) do
-        aerial.include(dirPath.."/"..fileName, fileName)
+    for _, fileName in ipairs(file.Find(dirPath .. "/*.lua", "LUA")) do
+        aerial.include(dirPath .. "/" .. fileName, fileName)
     end
 end
 
@@ -44,10 +44,11 @@ end
 function aerial.dprint(msg)
     local dev = GetConVar("developer")
     if dev:GetBool() then
-        print("[aerial debug] "..msg)
+        print("[aerial debug] " .. msg)
     end
 end
 
 aerial.includeDirectory("aerial/libs")
 aerial.includeDirectory("aerial")
 aerial.includeDirectory("aerial/hooks")
+aerial.includeDirectory("aerial/vgui")

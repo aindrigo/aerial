@@ -96,3 +96,10 @@ concommand.Add("aerial_debug_list_bones", function(ply)
 
     visit(vm, 0, "")
 end)
+
+concommand.Add("aerial_debug_muzzle", function(ply)
+    local wep = ply:GetActiveWeapon()
+    if not IsValid(wep) or not wep.Aerial then return end
+
+    PrintTable(wep:GetMuzzleAttachment())
+end)

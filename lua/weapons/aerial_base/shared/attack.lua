@@ -102,6 +102,11 @@ function SWEP:AttackCancel(id)
     local data = self:GetAttackTable(id)
     local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
 
+    local chargeData = data.Charge
+    if istable(chargeData) and chargeData.Type == aerial.enums.CHARGE_TYPE_HOLD and isstring(chargeData.CancelSound) then
+        self:EmitSound(chargeData.CancelSound)
+    end
+
     if attackType == aerial.enums.ATTACK_TYPE_BULLET then
         self:AttackBulletCancel(id)
     end
