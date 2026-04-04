@@ -1,5 +1,5 @@
 function SWEP:GetCrosshairAlpha()
-    if self:GetReloading() or (self:GetADS() and istable(self.ADS) and not self.ADS.Crosshair) then return 0 end
+    if self:GetReloading() or (self:GetAiming() and istable(self.Aim) and not self.Aim.Crosshair) then return 0 end
 
     return aerial.console.crosshair.colorAlpha:GetInt()
 end
@@ -25,7 +25,7 @@ function SWEP:GetCrosshairPos(x, y)
     local id = self:GetLastAttackName()
     local attackData = self:GetLastAttackTable()
 
-    if not attackData.Recoil or not self:GetADS() then
+    if not attackData.Recoil or not self:GetAiming() then
         return x, y
     end
 

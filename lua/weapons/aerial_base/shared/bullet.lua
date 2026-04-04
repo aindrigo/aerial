@@ -149,7 +149,7 @@ function SWEP:AttackBulletEffects(id, attackData)
     end
 
     local customRecoil = data.CustomRecoil or {}
-    if (self:GetADS() and not data.ShootAnimationADS) or customRecoil.Always then
+    if (self:GetAiming() and not data.ShootAnimationAiming) or customRecoil.Always then
         if customRecoil.UseShootAnimation or customRecoil.Disabled then
             self:PlayAnimation(data.ShootAnimation or ACT_VM_PRIMARYATTACK)
             self:QueueIdle()

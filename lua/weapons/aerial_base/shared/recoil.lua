@@ -40,7 +40,7 @@ end
 function SWEP:_GetSpreadModifier(data, spreadData)
     local ply = self:GetOwner()
     local mod = 1
-    if self:GetADS() then
+    if self:GetAiming() then
         mod = mod * spreadData.AimMult
     end
 
@@ -115,7 +115,7 @@ function SWEP:AttackEffectRecoil(id, attackData)
     end
 end
 
-function SWEP:VMRecoilADS(ct, ft, muzzle, matrix, attackData, recoil)
+function SWEP:VMRecoilAim(ct, ft, muzzle, matrix, attackData, recoil)
     local lerpSpeed = 16
 
     if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
@@ -150,8 +150,8 @@ function SWEP:VMRecoil(ct, ft, muzzle, matrix)
     local attackData = self:GetLastAttackTable()
     local recoil = self:AttackCalculateRecoil(id, attackData)
 
-    if self:GetADS() then
-        self:VMRecoilADS(ct, ft, muzzle, matrix, attackData, recoil)
+    if self:GetAiming() then
+        self:VMRecoilAim(ct, ft, muzzle, matrix, attackData, recoil)
         return
     end
 

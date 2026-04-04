@@ -74,3 +74,25 @@ concommand.Add("aerial_debug_list_attachments", function(ply)
         print(data.id, data.name)
     end
 end)
+
+concommand.Add("aerial_debug_list_bones", function(ply)
+    local vm = ply:GetViewModel()
+    if not IsValid(vm) then return end
+
+    local visited = {}
+    local function visit(vm, index, indent)
+        if visited[index] then
+            print("Not visiting " .. tostring(index) .. " to avoid infinite loop")
+            return
+        end
+
+        visited[index] = true
+        print(indent .. tostring(index) .. " " .. tostring(vm:GetBoneName(index)))
+        indent = indent .. "  "
+        for _, child in ipairs(vm:GetChildBones(index)) do
+            visit(vm, child, indent)
+        end
+    end
+
+    visit(vm, 0, "")
+end)

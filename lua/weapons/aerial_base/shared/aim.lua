@@ -1,5 +1,5 @@
-function SWEP:CanADS()
-    if istable(self.ADS) and self.ADS.Enabled == false then
+function SWEP:CanAim()
+    if istable(self.Aim) and self.Aim.Enabled == false then
         return false
     end
 
@@ -11,13 +11,13 @@ function SWEP:CanADS()
     return not self:GetReloading() and ct >= self:GetReloadTime()
 end
 
-function SWEP:OnADSChange(state)
-    if self:FireHook("OnADSChange", state) == false then return end
-    self:SetADS(state)
+function SWEP:OnAimStateChange(state)
+    if self:FireHook("OnAimStateChange", state) == false then return end
+    self:SetAiming(state)
 
     local ply = self:GetOwner()
 
     if CLIENT and (IsFirstTimePredicted() or game.SinglePlayer()) then
-        ply:EmitSound(state and "Aerial.ADSIn" or "Aerial.ADSOut")
+        ply:EmitSound(state and "Aerial.AimIn" or "Aerial.AimOut")
     end
 end

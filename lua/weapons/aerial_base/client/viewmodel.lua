@@ -20,34 +20,34 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     local moveSpeed = self:GetOwnerSpeed()
 
     -- Calculations
-    self:VMADS(ct, ft, matrix)
+    self:VMAim(ct, ft, matrix)
     self:VMViewSway(ct, ft, muzzleAttachment, matrix)
     self:VMRecoil(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
     -- Offset
-    local inverseADSFraction = 1 - (self.m_fADSFraction or 0)
+    local inverseAimFraction = 1 - (self.m_fAimFraction or 0)
 
     local vmSettings = self.VMSettings or {}
     if istable(vmSettings.Offset) then
         local offset = vmSettings.Offset
         if isvector(offset.Position) then
-            matrix:Translate(offset.Position * inverseADSFraction)
+            matrix:Translate(offset.Position * inverseAimFraction)
         end
 
         if isangle(offset.Angles) then
-            matrix:Rotate(offset.Angles * inverseADSFraction)
+            matrix:Rotate(offset.Angles * inverseAimFraction)
         end
     end
 
     if istable(vmSettings.CenteredOffset) and aerial.console.center:GetBool() then
         local offset = vmSettings.CenteredOffset
         if isvector(offset.Position) then
-            matrix:Translate(offset.Position * inverseADSFraction)
+            matrix:Translate(offset.Position * inverseAimFraction)
         end
 
         if isangle(offset.Angles) then
-            matrix:Rotate(offset.Angles * inverseADSFraction)
+            matrix:Rotate(offset.Angles * inverseAimFraction)
         end
     end
 
@@ -75,11 +75,11 @@ function SWEP:VMViewBob(ct, ft, moveSpeed, muzzle, matrix)
         bobFrequency = bobFrequency * bobTable.FrequencyMultiplier
     end
 
-    if self:GetADS() then
-        local adsAmplitudeMultiplier = bobTable.ADSAmplitudeMultiplier or 0.5
-        if isnumber(adsAmplitudeMultiplier) then
-            bobAmplitude = bobAmplitude * adsAmplitudeMultiplier
-            backMultiplier = backMultiplier * adsAmplitudeMultiplier
+    if self:GetAiming() then
+        local aimAmplitudeMultiplier = bobTable.AimingAmplitudeMultiplier or 0.5
+        if isnumber(aimAmplitudeMultiplier) then
+            bobAmplitude = bobAmplitude * aimAmplitudeMultiplier
+            backMultiplier = backMultiplier * aimAmplitudeMultiplier
         end
     end
 
@@ -138,9 +138,9 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     local difference = eyeAng - self.m_aLastEyeAng
 
     local speed = self.Sway.Speed or 6
-    if self:GetADS() then
-        if istable(self.ADS) and isnumber(self.ADS.SwaySpeed) then
-            speed = self.ADS.SwaySpeed
+    if self:GetAiming() then
+        if istable(self.Aim) and isnumber(self.Aim.SwaySpeed) then
+            speed = self.Aim.SwaySpeed
         end
 
         speed = speed * 2
@@ -157,8 +157,8 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     local range = 30
     local multiplier = swayTable.Multiplier or 1
 
-    if self:GetADS() then
-        local adsMultiplier = swayTable.ADSMultiplier or 0.6
+    if self:GetAiming() then
+        local adsMultiplier = swayTable.AimingMultiplier or 0.6
         if isnumber(adsMultiplier) then
             multiplier = multiplier * adsMultiplier
         end
@@ -192,31 +192,31 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     matrix:Translate(-swayOrigin)
 end
 
-function SWEP:VMADS(ct, ft, matrix)
-    if not istable(self.ADS) or not isvector(self.ADS.Position) or not isangle(self.ADS.Angles) then return end
-    local adsData = self.ADS
+function SWEP:VMAim(ct, ft, matrix)
+    if not istable(self.Aim) or not isvector(self.Aim.Position) or not isangle(self.Aim.Angles) then return end
+    local aimData = self.Aim
 
-    local position = adsData.Position
-    local angles = adsData.Angles
+    local position = aimData.Position
+    local angles = aimData.Angles
 
-    if not isvector(adsData.MiddlePosition) then
-        adsData.MiddlePosition = position + angles:Up() * -4
+    if not isvector(aimData.MiddlePosition) then
+        aimData.MiddlePosition = position + angles:Up() * -4
     end
 
-    if not isangle(adsData.MiddleAngles) then
-        adsData.MiddleAngles = angles / 2
+    if not isangle(aimData.MiddleAngles) then
+        aimData.MiddleAngles = angles / 2
     end
 
-    local targetFraction = self:GetADS() and 1 or 0
-    if targetFraction == 1 and self.m_fADSFraction == 1 then
+    local targetFraction = self:GetAiming() and 1 or 0
+    if targetFraction == 1 and self.m_fAimFraction == 1 then
         matrix:Rotate(angles)
         matrix:Translate(position)
         return
     end
 
-    self.m_fADSFraction = Lerp(ft * 12 * (adsData.Speed or 1), self.m_fADSFraction or 0, targetFraction)
-    matrix:Rotate(math.QuadraticBezier(self.m_fADSFraction, Angle(), adsData.MiddleAngles, angles))
-    matrix:Translate(math.QuadraticBezier(self.m_fADSFraction, Vector(), adsData.MiddlePosition, position))
+    self.m_fAimFraction = Lerp(ft * 12 * (aimData.Speed or 1), self.m_fAimFraction or 0, targetFraction)
+    matrix:Rotate(math.QuadraticBezier(self.m_fAimFraction, Angle(), aimData.MiddleAngles, angles))
+    matrix:Translate(math.QuadraticBezier(self.m_fAimFraction, Vector(), aimData.MiddlePosition, position))
 end
 
 function SWEP:VMDrawElement(index, elementData, vm, flags)

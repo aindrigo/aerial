@@ -68,7 +68,7 @@ SWEP.Secondary.Recoil = SWEP.Primary.Recoil
 SWEP.Secondary.Punch = SWEP.Primary.Punch
 
 SWEP.Hooks = {}
-SWEP.ADS = {}
+SWEP.Aim = {}
 
 SWEP.Bob = {}
 SWEP.Sway = {}
@@ -85,7 +85,7 @@ function SWEP:Reset()
     self:SetReloadTime(0)
     self:SetFireModeTime(0)
     self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING)
-    self:SetADS(false)
+    self:SetAiming(false)
     self:SetReloading(false)
     self:SetReloadFinished(false)
     self:SetReloadName("")
@@ -142,9 +142,9 @@ end
 
 function SWEP:OnReloaded()
     self:SetHoldType(self.HoldType)
-    if CLIENT and istable(self.ADS) then
-        self.ADS.MiddlePosition = nil
-        self.ADS.MiddleAngles = nil
+    if CLIENT and istable(self.Aim) then
+        self.Aim.MiddlePosition = nil
+        self.Aim.MiddleAngles = nil
     end
 
     local attachments = aerial.Attachments.Data[self:EntIndex()]
@@ -179,7 +179,7 @@ function SWEP:SetupDataTables()
     self:NetworkVar("String", "ReloadName")                 -- Name for attack table when finishing reload
     self:NetworkVar("String", "LastAttackName")             -- Used for reloading, changing firemode, etc
     self:NetworkVar("String", "CurrentAttackName")          -- See CurrentAttackTime
-    self:NetworkVar("Bool", "ADS")                          -- ADS state
+    self:NetworkVar("Bool", "Aiming")                       -- Aiming state
     self:NetworkVar("Bool", "Reloading")                    -- To check if reloading or not
     self:NetworkVar("Bool", "ReloadFinished")               -- To check if reload has finished, used in bullet by bullet reload
     self:NetworkVar("Vector", "CustomRecoilPosition")       -- Custom recoil values, used for firing when aiming downsights

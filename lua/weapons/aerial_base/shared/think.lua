@@ -3,7 +3,7 @@ function SWEP:Think()
 
     self:ThinkIdle()
     self:ThinkAttacks()
-    self:ThinkADS()
+    self:ThinkAim()
     self:ThinkReload()
     self:ThinkCustomRecoil()
     self:ThinkFireMode()
@@ -25,7 +25,7 @@ function SWEP:ThinkAttack(id, key)
     local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
     if attackType == aerial.enums.ATTACK_TYPE_NONE then return end
 
-    if istable(self.ADS) and self.ADS.Enabled ~= false and (self.ADS.Key or IN_ATTACK2) == key then
+    if istable(self.Aim) and self.Aim.Enabled ~= false and (self.Aim.Key or IN_ATTACK2) == key then
         aerial.dprint("Warning: conflicting keys for ironsights and attack " .. id)
     end
 
@@ -54,21 +54,21 @@ function SWEP:ThinkAttack(id, key)
     self:ThinkRecoil(id, data)
 end
 
-function SWEP:ThinkADS()
-    if not istable(self.ADS) or self.ADS.Enabled == false then return end
+function SWEP:ThinkAim()
+    if not istable(self.Aim) or self.Aim.Enabled == false then return end
 
-    local canAds = self:CanADS()
+    local canAim = self:CanAim()
 
     local ply = self:GetOwner()
-    local key = self.ADS.Key or IN_ATTACK2
+    local key = self.Aim.Key or IN_ATTACK2
 
     local down = ply:KeyDown(key)
-    local state = self:GetADS()
+    local state = self:GetAiming()
 
-    if down and not state and canAds then
-        self:OnADSChange(true)
-    elseif (not down or not canAds) and state then
-        self:OnADSChange(false)
+    if down and not state and canAim then
+        self:OnAimStateChange(true)
+    elseif (not down or not canAim) and state then
+        self:OnAimStateChange(false)
     end
 end
 
