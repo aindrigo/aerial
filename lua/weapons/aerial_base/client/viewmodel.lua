@@ -26,15 +26,28 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
     -- Offset
+    local inverseADSFraction = 1 - (self.m_fADSFraction or 0)
+
     local vmSettings = self.VMSettings or {}
     if istable(vmSettings.Offset) then
         local offset = vmSettings.Offset
         if isvector(offset.Position) then
-            matrix:Translate(offset.Position)
+            matrix:Translate(offset.Position * inverseADSFraction)
         end
 
         if isangle(offset.Angles) then
-            matrix:Rotate(offset.Angles)
+            matrix:Rotate(offset.Angles * inverseADSFraction)
+        end
+    end
+
+    if istable(vmSettings.CenteredOffset) and aerial.console.center:GetBool() then
+        local offset = vmSettings.CenteredOffset
+        if isvector(offset.Position) then
+            matrix:Translate(offset.Position * inverseADSFraction)
+        end
+
+        if isangle(offset.Angles) then
+            matrix:Rotate(offset.Angles * inverseADSFraction)
         end
     end
 

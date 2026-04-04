@@ -42,6 +42,10 @@ aerial.console.crosshair.dotEnabled = aerial.console.crosshair.dotEnabled or
 aerial.console.crosshair.outline = aerial.console.crosshair.outline or
     CreateClientConVar("aerial_crosshair_outline", "0", true, false, "Crosshair outline thickness, 0 = disabled", 0, 8)
 
+aerial.console.center = aerial.console.center or
+    CreateClientConVar("aerial_centered", "0", true, false,
+        "Centered weapon enabled state. Some weapons may not support this", 0, 1)
+
 -- Commands
 concommand.Add("aerial_set_bind_firemode", function(ply, cmd, args, argStr)
     local code = input.GetKeyCode(argStr)
