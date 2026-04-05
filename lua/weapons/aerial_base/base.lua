@@ -40,7 +40,7 @@ SWEP.Primary.Spread.VelocityMult = 1.5
 SWEP.Primary.Recoil = {}
 SWEP.Primary.Recoil.MultiplierX = 2
 SWEP.Primary.Recoil.MultiplierY = 2
-SWEP.Primary.Recoil.RestTime = 1
+SWEP.Primary.Recoil.RestTime = 0.1
 
 SWEP.Primary.Punch = {}
 SWEP.Primary.Punch.AmountX = 0
