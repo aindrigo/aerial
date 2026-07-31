@@ -35,6 +35,12 @@ function SWEP:ThinkAttack(id, key)
         if chargeType ~= aerial.enums.CHARGE_TYPE_RELEASE then
             canAttack = canAttack and ply:KeyDown(key)
         end
+    else
+        local fireModeId = self:GetAttackFireMode(id)
+        local fireMode = self:GetAttackFireModeData(id, fireModeId)
+        if fireMode.Automatic then
+            canAttack = canAttack and ply:KeyDown(key)
+        end
     end
 
     if canAttack and ply:KeyPressed(key) and (self:GetCurrentAttackTime() < 1 or self:GetCurrentAttackName() == "") then
