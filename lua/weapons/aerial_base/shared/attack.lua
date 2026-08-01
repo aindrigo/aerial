@@ -116,6 +116,10 @@ function SWEP:AttackHitEntity(id, attackData, traceResult)
     if self:FireHook("AttackHitEntity", id, attackData) then return end
 
     local data = self:GetAttackTable(id)
+
+    local victim = traceResult.Entity
+    local hitGroup = traceResult.HitGroup
+
     local dmgInfo = DamageInfo()
     dmgInfo:SetDamage(attackData.Damage)
     dmgInfo:SetAttacker(attackData.Attacker)
@@ -126,5 +130,30 @@ function SWEP:AttackHitEntity(id, attackData, traceResult)
     dmgInfo:SetDamagePosition(traceResult.HitPos)
     dmgInfo:SetDamageForce(traceResult.Normal * (data.Force or 1))
 
-    traceResult.Entity:DispatchTraceAttack(dmgInfo, traceResult)
+
+    if istable(data.HitGroupMultipliers) then
+        local mul = data.HitGroupMultipliers[hitGroup]
+        if isnumber(mul) then
+            dmgInfo:ScaleDamage(mul)
+        end
+    end
+
+    local ammoData = self:FireHook("GetAmmoData", id)
+    if not istable(ammoData) then
+        ammoData = game.GetAmmoData(game.GetAmmoID(data.Ammo))
+    end
+
+    if isnumber(ammoData.aerial_DamageMultiplier) then
+        dmgInfo:ScaleDamage(ammoData.aerial_DamageMultiplier)
+    end
+
+    if victim:IsPlayer() then
+        hook.Run("ScalePlayerDamage", victim, hitGroup, dmgInfo)
+    end
+
+    self:FireHook("AttackScaleDamage", id, dmgInfo, hitGroup)
+
+    if SERVER then
+        victim:TakeDamageInfo(dmgInfo)
+    end
 end

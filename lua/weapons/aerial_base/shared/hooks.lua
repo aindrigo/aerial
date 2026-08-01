@@ -18,7 +18,14 @@ function SWEP:FireHook(name, ...)
     if not istable(self.Hooks) then return end
 
     local hookFunction = self.Hooks[name]
-    if not isfunction(hookFunction) then return end
+    if not isfunction(hookFunction) then
+        return hook.Run("Aerial_" .. name, self, ...)
+    end
 
-    return hookFunction(self, ...)
+    local value = hookFunction(self, ...)
+    if value == nil then
+        return hook.Run("Aerial_" .. name, self, ...)
+    end
+
+    return value
 end

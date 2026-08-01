@@ -172,6 +172,26 @@ function SWEP:AttackBulletEffects(id, attackData)
         impactEffect:SetDamageType(attackData.DamageType)
 
         util.Effect("Impact", impactEffect, true, false)
+
+        if traceResult.MatType == MAT_FLESH then
+            impactEffect = EffectData()
+            impactEffect:SetOrigin(traceResult.HitPos)
+            impactEffect:SetNormal(traceResult.Normal)
+
+            util.Effect("BloodImpact", impactEffect, true, false)
+        elseif traceResult.MatType == MAT_METAL then
+            impactEffect = EffectData()
+            impactEffect:SetOrigin(traceResult.HitPos)
+            impactEffect:SetNormal(traceResult.Normal)
+
+            util.Effect("MetalSpark", impactEffect, true, false)
+        elseif traceResult.MatType == MAT_GLASS then
+            impactEffect = EffectData()
+            impactEffect:SetOrigin(traceResult.HitPos)
+            impactEffect:SetNormal(traceResult.Normal)
+
+            util.Effect("GlassImpact", impactEffect, true, false)
+        end
     end
 
     self:AttackEffectMuzzleFlash(id, attackData)
