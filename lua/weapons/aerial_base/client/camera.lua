@@ -1,6 +1,12 @@
 function SWEP:CalcView(ply, position, angles, fov)
     if not self:GetReloading() or not aerial.console.reloadCameraEnabled:GetBool() then return end
 
+    local r = self:GetReloadName()
+    if not r or r == "" then return end
+
+    local data = self:GetAttackTable(r)
+    if istable(data) and data.NoReloadCamera then return end
+
     local muzzleOrigin = self:GetMuzzleAttachment()
     local realMuzzle = self:GetRealMuzzleAttachment()
 

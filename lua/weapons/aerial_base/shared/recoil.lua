@@ -20,7 +20,7 @@ end
 SWEP.Secondary.Recoil.Function = SWEP.Primary.Recoil.Function
 
 function SWEP:GetShotFrac(data)
-    return math.Clamp(self:GetShot() / data.ClipSize + 0.05, 0, 1)
+    return math.Clamp(self:GetShot() / data.ClipSize, 0, 1)
 end
 
 function SWEP:AttackCalculateRecoil(id, attackData)
@@ -40,19 +40,23 @@ end
 function SWEP:_GetSpreadModifier(data, spreadData)
     local ply = self:GetOwner()
     local mod = 1
-    if self:GetAiming() then
+    if self:GetAiming() and spreadData.AimMult > 0 then
         mod = mod * spreadData.AimMult
     end
 
-    if ply:Crouching() then
+    if ply:Crouching() and spreadData.CrouchMult > 0 then
         mod = mod * spreadData.CrouchMult
     end
 
-    if not ply:IsOnGround() then
+    if not ply:IsOnGround() and spreadData.AirMult > 0 then
         mod = mod * spreadData.AirMult
     end
 
-    mod = mod * (self:GetShotFrac(data) * spreadData.ProlongedFireMult)
+    local prolongedFireMult = self:GetShotFrac(data) * spreadData.ProlongedFireMult
+    if prolongedFireMult > 0 then
+        mod = mod * 1 + prolongedFireMult
+    end
+
     mod = mod + (self:GetOwnerSpeed() * spreadData.VelocityMult)
 
     return mod

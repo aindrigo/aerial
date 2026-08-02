@@ -18,6 +18,8 @@ function SWEP:GetAttackTable(id)
     if id == "Primary" then return self.Primary end
     if id == "Secondary" then return self.Secondary end
 
+    if not istable(self.AttackTables) then return end
+
     return self.AttackTables[id]
 end
 

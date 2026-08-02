@@ -51,3 +51,23 @@ function SWEP:AttackEffectMuzzleFlash(id, attackData)
         end
     end
 end
+
+function SWEP:_AttackStartLoopingSound(id)
+    local data = self:GetAttackTable(id)
+
+    self._loopingAttackSounds = self._loopingAttackSounds or {}
+    if not self._loopingAttackSounds[id] then
+        local snd = CreateSound(self, data.SoundLooping)
+        snd:Play()
+        self._loopingAttackSounds[id] = snd
+    end
+end
+
+function SWEP:_AttackStopLoopingSound(id)
+    self._loopingAttackSounds = self._loopingAttackSounds or {}
+    if self._loopingAttackSounds[id] then
+        local snd = self._loopingAttackSounds[id]
+        snd:Stop()
+        self._loopingAttackSounds[id] = nil
+    end
+end

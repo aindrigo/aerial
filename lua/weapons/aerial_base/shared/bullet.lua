@@ -22,6 +22,26 @@ function SWEP:AttackBulletPerform(id, attackData)
     local key = self:GetAttackKey(data)
     local keyDown = ply:KeyDown(key)
 
+
+    local ammoPenalty = attackData.AmmoPenalty or data.AmmoPenalty or 1
+    if magazineCount < ammoPenalty then
+        if data.EmptyAnimation then
+            self:PlayAnimation(data.EmptyAnimation)
+            self:QueueIdle()
+        end
+
+        if data.SoundLooping then
+            self:_AttackStopLoopingSound(id)
+        end
+
+        if data.EmptySound then
+            self:EmitSound(data.EmptySound, SNDLVL_NORM)
+        end
+
+        self:SetCurrentAttackTime(math.huge)
+        return
+    end
+
     if not istable(chargeData) or chargeData.Enabled == false then
         if fireMode.Automatic and keyDown then
             self:SetCurrentAttackName(id)
@@ -39,24 +59,10 @@ function SWEP:AttackBulletPerform(id, attackData)
         end
     end
 
-    local ammoPenalty = attackData.AmmoPenalty or data.AmmoPenalty or 1
-    if magazineCount < ammoPenalty then
-        if data.EmptyAnimation then
-            self:PlayAnimation(data.EmptyAnimation)
-            self:QueueIdle()
-        end
-
-        if data.EmptySound then
-            self:EmitSound(data.EmptySound, SNDLVL_NORM)
-        end
-
-        return
-    end
-
     self:AttackTakeAmmo(id, attackData, ammoPenalty)
 
-    attackData.Delay = delay
-    attackData.Damage = data.Damage
+    attackData.Delay = attackData.Delay or delay
+    attackData.Damage = attackData.Damage or data.Damage
     attackData.DamageType = attackData.DamageType or data.DamageType or DMG_BULLET
     attackData.Traces = {}
 
@@ -139,12 +145,7 @@ function SWEP:AttackBulletEffects(id, attackData)
     ply:SetAnimation(PLAYER_ATTACK1)
 
     if isstring(data.SoundLooping) then
-        self._loopingAttackSounds = self._loopingAttackSounds or {}
-        if not self._loopingAttackSounds[id] then
-            local snd = CreateSound(self, data.SoundLooping)
-            snd:Play()
-            self._loopingAttackSounds[id] = snd
-        end
+        self:_AttackStartLoopingSound(id)
     elseif isstring(data.Sound) then
         self:EmitSound(data.Sound, SNDLVL_GUNFIRE)
     end
@@ -201,11 +202,6 @@ end
 function SWEP:AttackBulletCancel(id)
     local data = self:GetAttackTable(id)
     if isstring(data.SoundLooping) then
-        self._loopingAttackSounds = self._loopingAttackSounds or {}
-        if self._loopingAttackSounds[id] then
-            local snd = self._loopingAttackSounds[id]
-            snd:Stop()
-            self._loopingAttackSounds[id] = nil
-        end
+        self:_AttackStopLoopingSound(id)
     end
 end

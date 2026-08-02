@@ -141,9 +141,7 @@ function SWEP:AttackHitEntity(id, attackData, traceResult)
     local ammoData = self:FireHook("GetAmmoData", id)
     if not istable(ammoData) then
         ammoData = game.GetAmmoData(game.GetAmmoID(data.Ammo))
-    end
-
-    if isnumber(ammoData.aerial_DamageMultiplier) then
+    elseif isnumber(ammoData.aerial_DamageMultiplier) then
         dmgInfo:ScaleDamage(ammoData.aerial_DamageMultiplier)
     end
 
