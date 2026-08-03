@@ -38,7 +38,8 @@ function SWEP:AttackBulletPerform(id, attackData)
             self:EmitSound(data.EmptySound, SNDLVL_NORM)
         end
 
-        self:SetCurrentAttackTime(math.huge)
+        self:SetCurrentAttackTime(0)
+        self:SetCurrentAttackName("")
         return
     end
 
@@ -65,6 +66,8 @@ function SWEP:AttackBulletPerform(id, attackData)
     attackData.Damage = attackData.Damage or data.Damage
     attackData.DamageType = attackData.DamageType or data.DamageType or DMG_BULLET
     attackData.Traces = {}
+
+    attackData.Recoil = self:AttackCalculateRecoil(id, attackData)
 
     self:SetShot(self:GetShot() + 1)
     self:SetLastShootTime(CurTime()) -- HACK
@@ -96,9 +99,7 @@ function SWEP:AttackBulletTrace(id, attackData, index)
     local ply = attackData.Attacker
 
     local data = self:GetAttackTable(id)
-    local spread = self:GetFinalShotPlacement(id, attackData, index)
-
-    attackData.Spread = spread
+    local spread = self:AttackCalculateFinalShotPlacement(id, attackData, index)
 
     local direction = ply:GetAimVector()
     local angle = direction:Angle()
@@ -150,11 +151,35 @@ function SWEP:AttackBulletEffects(id, attackData)
         self:EmitSound(data.Sound, SNDLVL_GUNFIRE)
     end
 
-    local customRecoil = data.CustomRecoil or {}
+    if isstring(data.SoundLayer) then
+        self:EmitSound(data.SoundLayer, SNDLVL_GUNFIRE)
+    elseif istable(data.SoundLayer) then
+        self:EmitSound(data.SoundLayer[math.random(#data.SoundLayer)], SNDLVL_GUNFIRE)
+    end
+
+    local customRecoil = data.CustomRecoilEffects or {}
     if (self:GetAiming() and not data.ShootAnimationAiming) or customRecoil.Always then
         if customRecoil.UseShootAnimation or customRecoil.Disabled then
             self:PlayAnimation(data.ShootAnimation or ACT_VM_PRIMARYATTACK)
             self:QueueIdle()
+        end
+
+        if not customRecoil.Disabled then
+            local force = customRecoil.Force
+            if not force then
+                force = attackData.Damage / 6
+            end
+
+            local yaw = attackData.Recoil.x * 0.2
+            if isnumber(customRecoil.YawMultiplier) then
+                yaw = yaw * customRecoil.YawMultiplier
+            end
+
+            local pitch = -force
+
+            self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_KICKBACK)
+            self:SetCustomRecoilTargetPosition(Vector(pitch, 0, 0))
+            self:SetCustomRecoilTargetAngles(Angle(pitch, yaw, 0))
         end
     else
         self:PlayAnimation(attackData.Animation or data.ShootAnimation or ACT_VM_PRIMARYATTACK)

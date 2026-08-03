@@ -131,6 +131,10 @@ function SWEP:ReloadAttackTimer(id)
             return
         end
 
+        if data.InsertBulletSound then
+            self:EmitSound(data.InsertBulletSound)
+        end
+
         local bulletsToAdd = 1
         local target = math.min(currentMagazine + bulletsToAdd, reserve)
         ply:SetAmmo(reserve - bulletsToAdd, data.Ammo)
