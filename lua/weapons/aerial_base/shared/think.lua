@@ -121,7 +121,7 @@ function SWEP:ThinkCurrentAttack()
     if istable(chargeData) and chargeData.Enabled ~= false then
         local chargeType = chargeData.Type or aerial.enums.CHARGE_TYPE_RELEASE
         if chargeType == aerial.enums.CHARGE_TYPE_RELEASE then
-            if ply:KeyDown(self:GetAttackKey(data)) and not (isnumber(chargeData.HoldTime) and (attackTime + chargeData.HoldTime) < ct) then return end
+            if ply:KeyDown(self:GetAttackKey(data)) and not (isnumber(chargeData.HoldTime) and (attackTime + chargeData.HoldTime) < ct) or attackTime == 0 then return end
         elseif chargeType == aerial.enums.CHARGE_TYPE_HOLD then
             if attackTime > ct then return end
         end

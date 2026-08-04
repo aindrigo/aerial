@@ -23,13 +23,12 @@ function SWEP:GetShotFrac(data)
     return math.Clamp(self:GetShot() / data.ClipSize, 0, 1)
 end
 
-function SWEP:AttackCalculateRecoil(id, attackData)
-    local hookResult = self:FireHook("AttackCalculateRecoil", id, ply)
+function SWEP:AttackCalculateRecoil(id, data, attackData)
+    local hookResult = self:FireHook("AttackCalculateRecoil", id, data, attackData)
     if isvector(hookResult) then
         return hookResult
     end
 
-    local data = self:GetAttackTable(id)
     local recoilData = data.Recoil or {}
 
     local x, y = recoilData:Function(self:GetShotFrac(data))
@@ -37,7 +36,14 @@ function SWEP:AttackCalculateRecoil(id, attackData)
     return Vector(y * recoilData.MultiplierY, 0, x * recoilData.MultiplierX)
 end
 
-function SWEP:_GetSpreadModifier(data, spreadData)
+
+--- @param attackData? table
+function SWEP:AttackGetSpreadModifier(id, data, attackData)
+    local v = self:FireHook("AttackGetSpreadModifier", id, data, attackData)
+    if isnumber(v) then return v end
+
+    local spreadData = data.Spread
+
     local ply = self:GetOwner()
     local mod = 1
     if self:GetAiming() and spreadData.AimMult > 0 then
@@ -59,20 +65,24 @@ function SWEP:_GetSpreadModifier(data, spreadData)
 
     mod = mod + (self:GetOwnerSpeed() * spreadData.VelocityMult)
 
+    local hook = self:FireHook("AttackGetSpreadModifierAdditive", id, attackData)
+    if isnumber(hook) then
+        mod = mod * hook
+    end
+
     return mod
 end
 
-function SWEP:AttackCalculateSpread(id, attackData, index)
-    local hookResult = self:FireHook("AttackCalculateSpread", id, attackData, index)
+function SWEP:AttackCalculateSpread(id, data, attackData, index)
+    local hookResult = self:FireHook("AttackCalculateSpread", id, data, attackData, index)
     if isvector(hookResult) then
         return hookResult
     end
 
-    local data = self:GetAttackTable(id)
     local ply = attackData.Attacker
     local spreadData = data.Spread or {}
 
-    local mod = self:_GetSpreadModifier(data, spreadData)
+    local mod = self:AttackGetSpreadModifier(id, data, attackData)
     local cone = Vector(spreadData.Cone, 0, spreadData.Cone)
     cone:Mul(mod)
 
@@ -93,9 +103,9 @@ function SWEP:ThinkRecoil(attackId, attackData)
     end
 end
 
-function SWEP:AttackCalculateFinalShotPlacement(id, attackData, index)
+function SWEP:AttackCalculateFinalShotPlacement(id, data, attackData, index)
     local pos = attackData.Recoil
-    pos = pos + self:AttackCalculateSpread(id, attackData, index)
+    pos = pos + self:AttackCalculateSpread(id, data, attackData, index)
 
     return pos
 end

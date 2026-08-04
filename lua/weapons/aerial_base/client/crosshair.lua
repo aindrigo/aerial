@@ -1,16 +1,26 @@
 function SWEP:GetCrosshairAlpha()
+    local v = self:FireHook("GetCrosshairAlpha")
+    if isnumber(v) then
+        return v
+    end
+
     if self:GetReloading() or (self:GetAiming() and istable(self.Aim) and not self.Aim.Crosshair) then return 0 end
 
     return aerial.console.crosshair.colorAlpha:GetInt()
 end
 
 function SWEP:GetCrosshairGap(static)
+    local v = self:FireHook("GetCrosshairGap", static)
+    if isnumber(v) then
+        return v
+    end
+
     local attackData = self:GetLastAttackTable()
     local spreadData = attackData.Spread or {}
 
     local base = spreadData.Cone
     if not static then
-        base = base * self:_GetSpreadModifier(attackData, spreadData)
+        base = base * self:AttackGetSpreadModifier(self:GetLastAttackName(), attackData)
     end
 
     base = base - aerial.console.crosshair.gapAdditive:GetFloat()
@@ -49,6 +59,11 @@ function SWEP:GetCrosshairPos(x, y)
 end
 
 function SWEP:DoDrawCrosshair(x, y)
+    local attackData = self:GetLastAttackTable()
+    if attackData.NoCrosshair == true then
+        return false
+    end
+
     x, y = self:GetCrosshairPos(x, y)
 
     local ft = FrameTime()

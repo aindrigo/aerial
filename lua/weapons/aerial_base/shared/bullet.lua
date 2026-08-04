@@ -6,7 +6,7 @@ end
 
 function SWEP:AttackBulletPerform(id, attackData)
     if self:FireHook("AttackBulletPerform", id, attackData) then return end
-
+        debug.Trace()
     local ply = attackData.Attacker
     local data = self:GetAttackTable(id)
 
@@ -67,7 +67,7 @@ function SWEP:AttackBulletPerform(id, attackData)
     attackData.DamageType = attackData.DamageType or data.DamageType or DMG_BULLET
     attackData.Traces = {}
 
-    attackData.Recoil = self:AttackCalculateRecoil(id, attackData)
+    attackData.Recoil = self:AttackCalculateRecoil(id, data, attackData)
 
     self:SetShot(self:GetShot() + 1)
     self:SetLastShootTime(CurTime()) -- HACK
@@ -99,7 +99,7 @@ function SWEP:AttackBulletTrace(id, attackData, index)
     local ply = attackData.Attacker
 
     local data = self:GetAttackTable(id)
-    local spread = self:AttackCalculateFinalShotPlacement(id, attackData, index)
+    local spread = self:AttackCalculateFinalShotPlacement(id, data, attackData, index)
 
     local direction = ply:GetAimVector()
     local angle = direction:Angle()
