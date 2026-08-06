@@ -3,6 +3,15 @@ function SWEP:VM(index)
     return self:GetOwner():GetViewModel(index)
 end
 
+function SWEP:IsViewing()
+    if SERVER then return false end
+
+    local ply = self:GetOwner()
+    if not IsValid(ply) or ply ~= LocalPlayer() or ply:ShouldDrawLocalPlayer() then return false end
+
+    return true
+end
+
 function SWEP:GetAttackTables()
     local tables = { ["Primary"] = self.Primary, ["Secondary"] = self.Secondary }
     if istable(self.AttackTables) then

@@ -90,9 +90,34 @@ function SWEP:ThinkReload()
     local id = self:GetReloadName()
     local ct = CurTime()
 
-    if ct >= reloadTime and id ~= "" then
-        self:ReloadAttackTimer(id)
+    local diff = ct - self:GetReloadStartTime()
+    if id == "" then return end
+
+    local lastReloadTime = self.m_fLastReloadTime
+    if not isnumber(lastReloadTime) then
+        lastReloadTime = diff
     end
+
+    local data = self:GetAttackTable(id)
+    if istable(data.ReloadSounds) and self:IsViewing() then
+        for time, snd in pairs(data.ReloadSounds) do
+            if lastReloadTime < time and diff >= time then
+                self:EmitSound(snd)
+            end
+        end
+    end
+
+
+    if ct >= reloadTime then
+        self:ReloadAttackTimer(id)
+        self.m_fLastReloadTime = nil
+        return
+    end
+
+    if CLIENT and (IsFirstTimePredicted() or game.SinglePlayer()) then
+        self.m_fLastReloadTime = diff
+    end
+
 end
 
 function SWEP:ThinkFireMode()

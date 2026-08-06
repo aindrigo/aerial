@@ -69,8 +69,14 @@ function SWEP:ReloadAttack(id)
         self:SetReloadTime(endTime)
         self:SetReloadEndTime(endTime)
     elseif reloadMode == aerial.enums.RELOAD_MODE_BULLET_BY_BULLET then
+        if self:FireHook("ReloadAttackStart", id) then return end
+
         local endTime = ct + self:PlayAnimation(data.StartReloadAnimation or ACT_SHOTGUN_RELOAD_START)
         self:QueueIdle()
+
+        if isstring(data.StartReloadSound) then
+            self:EmitSound(data.StartReloadSound)
+        end
 
         self:SetReloadStartTime(ct)
         self:SetReloadTime(endTime)
@@ -125,11 +131,18 @@ function SWEP:ReloadAttackTimer(id)
                 return
             end
 
+            if self:FireHook("ReloadAttackFinish", id) then return end
+            if isstring(data.FinishReloadSound) then
+                self:EmitSound(data.FinishReloadSound)
+            end
+
             self:SetReloadTime(ct + self:PlayAnimation(data.FinishReloadAnimation or ACT_SHOTGUN_RELOAD_FINISH))
             self:QueueIdle()
             self:SetReloadFinished(true)
             return
         end
+
+        if self:FireHook("ReloadAttackInsert", id) then return end
 
         if data.InsertBulletSound then
             self:EmitSound(data.InsertBulletSound)
