@@ -6,7 +6,7 @@ end
 
 function SWEP:AttackBulletPerform(id, attackData)
     if self:FireHook("AttackBulletPerform", id, attackData) then return end
-        debug.Trace()
+
     local ply = attackData.Attacker
     local data = self:GetAttackTable(id)
 
