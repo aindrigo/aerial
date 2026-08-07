@@ -1,8 +1,39 @@
+
+function SWEP:WMDrawElement(index, elementData, wm, flags)
+    local state = self._wmElements[index]
+    if not istable(state) then
+        state = {}
+        local csModel = ClientsideModel(elementData.Model)
+        csModel:SetParent(wm)
+        csModel:SetNoDraw(true)
+        if elementData.BoneMerge then
+            csModel:AddEffects(EF_BONEMERGE)
+        end
+
+        if elementData.Scale then
+            csModel:SetModelScale(elementData.Scale)
+        end
+
+        state.csModel = csModel
+        self._wmElements[index] = state
+    end
+
+    local csModel = state.csModel
+    if csModel:GetParent() ~= wm then
+        csModel:SetParent(wm)
+    end
+
+    csModel:DrawModel(flags)
+end
+
 function SWEP:DrawWorldModel(flags)
-    if not istable(self.WM) or not istable(self.WM.Offset) or (not isvector(self.WM.Offset.Position) and not isangle(self.WM.Offset.Angles)) then
+    if not istable(self.WM) then
         self:DrawModel(flags)
         return
     end
+
+    local data = self.WM
+
     local wm = self.m_eWorldModel
     if not IsValid(wm) then
         wm = ClientsideModel(self.WorldModel)
@@ -18,15 +49,13 @@ function SWEP:DrawWorldModel(flags)
         local matrix = ply:GetBoneMatrix(boneId)
         if not matrix then return end
 
-        if istable(self.WM) then
-            if istable(self.WM.Offset) then
-                if isvector(self.WM.Offset.Position) then
-                    matrix:Translate(self.WM.Offset.Position)
-                end
+        if istable(data.Offset) then
+            if isvector(data.Offset.Position) then
+                matrix:Translate(data.Offset.Position)
+            end
 
-                if isangle(self.WM.Offset.Angles) then
-                    matrix:Rotate(self.WM.Offset.Angles)
-                end
+            if isangle(data.Offset.Angles) then
+                matrix:Rotate(data.Offset.Angles)
             end
         end
 
@@ -39,6 +68,12 @@ function SWEP:DrawWorldModel(flags)
         wm:SetAngles(self:GetAngles())
     end
 
+    if istable(data.Elements) then
+        self._wmElements = self._wmElements or {}
+        for index, elementData in ipairs(data.Elements) do
+            self:WMDrawElement(index, elementData, wm, flags)
+        end
+    end
 
     wm:DrawModel(flags)
 end
