@@ -91,6 +91,10 @@ function SWEP:Reset()
     self:SetReloadName("")
     self:SetCurrentAttackTime(0)
     self:SetCurrentAttackName("")
+    self:SetBurstFireCount(0)
+
+    self:SetPrimaryFireMode(1)
+    self:SetSecondaryFireMode(1)
 
     local zeroVec = Vector()
     local zeroAng = Angle()
@@ -217,6 +221,7 @@ function SWEP:SetupDataTables()
     self:NetworkVar("Int", "SecondaryFireMode")             -- Firemode for secondary
     self:NetworkVar("Int", "CustomRecoilMode")              -- Recoil mode, see aerial.enums.CUSTOM_RECOIL_MODE
     self:NetworkVar("Int", "Shot")
+    self:NetworkVar("Int", "BurstFireCount")
     self:NetworkVar("String", "ReloadName")                 -- Name for attack table when finishing reload
     self:NetworkVar("String", "LastAttackName")             -- Used for reloading, changing firemode, etc
     self:NetworkVar("String", "CurrentAttackName")          -- See CurrentAttackTime

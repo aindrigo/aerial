@@ -7,6 +7,7 @@ end
 function SWEP:AttackBulletPerform(id, attackData)
     if self:FireHook("AttackBulletPerform", id, attackData) then return end
 
+
     local ply = attackData.Attacker
     local data = self:GetAttackTable(id)
 
@@ -43,18 +44,45 @@ function SWEP:AttackBulletPerform(id, attackData)
         return
     end
 
+    local isBursting = isnumber(fireMode.Burst)
+    if isBursting then
+        self:SetBurstFireCount(self:GetBurstFireCount() + 1)
+    end
+
     if not istable(chargeData) or chargeData.Enabled == false then
         if fireMode.Automatic and keyDown then
             self:SetCurrentAttackName(id)
             self:SetCurrentAttackTime(attackTime)
         elseif not fireMode.Automatic then
-            self:SetNextAttack(id, attackTime)
+            if isBursting then
+                if self:GetBurstFireCount() >= fireMode.Burst then
+                    self:SetBurstFireCount(0)
+                    self:SetCurrentAttackName("")
+                    self:SetCurrentAttackTime(0)
+
+                    self:SetNextAttack(id, attackTime)
+                else
+                    self:SetCurrentAttackName(id)
+                    self:SetCurrentAttackTime(attackTime)
+                end
+            end
         end
     else
         if fireMode.Automatic and keyDown then
             self:SetCurrentAttackName(id)
             self:SetCurrentAttackTime(attackTime)
         elseif not fireMode.Automatic then
+            if self:GetBurstFireCount() >= fireMode.Burst then
+                self:SetBurstFireCount(0)
+                self:SetCurrentAttackName("")
+                self:SetCurrentAttackTime(0)
+
+                self:SetNextAttack(id, attackTime)
+            else
+                self:SetCurrentAttackName(id)
+                self:SetCurrentAttackTime(attackTime)
+            end
+
             self:SetCurrentAttackName("")
             self:SetCurrentAttackTime(0)
         end

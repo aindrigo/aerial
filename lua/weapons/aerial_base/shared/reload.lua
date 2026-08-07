@@ -68,6 +68,8 @@ function SWEP:ReloadAttack(id)
         self:SetReloadStartTime(ct)
         self:SetReloadTime(endTime)
         self:SetReloadEndTime(endTime)
+
+        self:FireHook("ReloadAttackFinish", id)
     elseif reloadMode == aerial.enums.RELOAD_MODE_BULLET_BY_BULLET then
         if self:FireHook("ReloadAttackStart", id) then return end
 
