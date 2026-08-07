@@ -142,10 +142,6 @@ end
 
 function SWEP:OnReloaded()
     self:SetHoldType(self.HoldType)
-    if CLIENT and istable(self.Aim) then
-        self.Aim.MiddlePosition = nil
-        self.Aim.MiddleAngles = nil
-    end
 
     local attachments = aerial.Attachments.Data[self:EntIndex()]
     if istable(attachments) then
@@ -154,12 +150,57 @@ function SWEP:OnReloaded()
         end
     end
 
-    if istable(self._vmElements) then
-        for _, state in ipairs(self._vmElements) do
-            state.csModel:Remove()
+    if CLIENT then
+        if istable(self.Aim) then
+            self.Aim.MiddlePosition = nil
+            self.Aim.MiddleAngles = nil
         end
 
-        self._vmElements = {}
+        if istable(self._vmElements) then
+            for _, state in ipairs(self._vmElements) do
+                state.csModel:Remove()
+            end
+
+            self._vmElements = {}
+        end
+
+        if istable(self._wmElements) then
+            for _, state in ipairs(self._wmElements) do
+                state.csModel:Remove()
+            end
+
+            self._wmElements = {}
+        end
+
+        if IsValid(self.m_eWorldModel) then
+            self.m_eWorldModel:Remove()
+            self.m_eWorldModel = nil
+        end
+    end
+end
+
+function SWEP:OnRemove()
+    if CLIENT then
+        if IsValid(self.m_eWorldModel) then
+            self.m_eWorldModel:Remove()
+            self.m_eWorldModel = nil
+        end
+
+        if istable(self._vmElements) then
+            for _, state in ipairs(self._vmElements) do
+                state.csModel:Remove()
+            end
+
+            self._vmElements = nil
+        end
+
+        if istable(self._wmElements) then
+            for _, state in ipairs(self._wmElements) do
+                state.csModel:Remove()
+            end
+
+            self._wmElements = nil
+        end
     end
 end
 
