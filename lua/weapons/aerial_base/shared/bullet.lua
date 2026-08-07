@@ -65,6 +65,8 @@ function SWEP:AttackBulletPerform(id, attackData)
                     self:SetCurrentAttackName(id)
                     self:SetCurrentAttackTime(attackTime)
                 end
+            else
+                self:SetNextAttack(id, attackTime)
             end
         end
     else
@@ -72,19 +74,21 @@ function SWEP:AttackBulletPerform(id, attackData)
             self:SetCurrentAttackName(id)
             self:SetCurrentAttackTime(attackTime)
         elseif not fireMode.Automatic then
-            if self:GetBurstFireCount() >= fireMode.Burst then
-                self:SetBurstFireCount(0)
+            if isBursting then
+                if self:GetBurstFireCount() >= fireMode.Burst then
+                    self:SetBurstFireCount(0)
+                    self:SetCurrentAttackName("")
+                    self:SetCurrentAttackTime(0)
+
+                    self:SetNextAttack(id, attackTime)
+                else
+                    self:SetCurrentAttackName(id)
+                    self:SetCurrentAttackTime(attackTime)
+                end
+            else
                 self:SetCurrentAttackName("")
                 self:SetCurrentAttackTime(0)
-
-                self:SetNextAttack(id, attackTime)
-            else
-                self:SetCurrentAttackName(id)
-                self:SetCurrentAttackTime(attackTime)
             end
-
-            self:SetCurrentAttackName("")
-            self:SetCurrentAttackTime(0)
         end
     end
 
