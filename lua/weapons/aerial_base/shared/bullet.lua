@@ -88,6 +88,8 @@ function SWEP:AttackBulletPerform(id, attackData)
             else
                 self:SetCurrentAttackName("")
                 self:SetCurrentAttackTime(0)
+
+                self:SetNextAttack(id, attackTime)
             end
         end
     end
