@@ -21,6 +21,8 @@ function SWEP:FindMuzzleAttachment()
     if not IsValid(self:GetOwner()) then return end
 
     local vm = self:VM()
+    if not IsValid(vm) then return end
+
     local dummy = ClientsideModel(vm:GetModel(), RENDERGROUP_VIEWMODEL)
     dummy:Spawn()
     dummy:ResetSequence(dummy:SelectWeightedSequence(self.IdleAnimation or ACT_VM_IDLE))
