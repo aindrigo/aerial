@@ -73,7 +73,12 @@ function SWEP:ReloadAttack(id)
     elseif reloadMode == aerial.enums.RELOAD_MODE_BULLET_BY_BULLET then
         if self:FireHook("ReloadAttackStart", id) then return end
 
-        local endTime = ct + self:PlayAnimation(data.StartReloadAnimation or ACT_SHOTGUN_RELOAD_START)
+        local startAnimation = data.StartReloadAnimation or ACT_SHOTGUN_RELOAD_START
+        if currentMagazine < 1 and data.StartReloadAnimationEmpty then
+            startAnimation = data.StartReloadAnimationEmpty
+        end
+
+        local endTime = ct + self:PlayAnimation(startAnimation)
         self:QueueIdle()
 
         if isstring(data.StartReloadSound) then

@@ -8,6 +8,10 @@ function SWEP:PlayAnimation(id)
         return 0
     end
 
+    if CLIENT then
+        vm:SetAnimTime(CurTime())
+    end
+
     vm:ResetSequenceInfo()
     vm:SendViewModelMatchingSequence(sequence)
 

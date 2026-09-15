@@ -191,10 +191,17 @@ function SWEP:AttackBulletEffects(id, attackData)
         self:EmitSound(data.SoundLayer[math.random(#data.SoundLayer)], SNDLVL_GUNFIRE)
     end
 
+    local currentMagazine = self:GetAttackMagazineCount(id)
+    local shootAnimation = attackData.Animation or data.ShootAnimation or ACT_VM_PRIMARYATTACK
+
+    if currentMagazine < 1 and data.LastShootAnimation then
+        shootAnimation = data.LastShootAnimation
+    end
+
     local customRecoil = data.CustomRecoilEffects or {}
     if (self:GetAiming() and not data.ShootAnimationAiming) or customRecoil.Always then
         if customRecoil.UseShootAnimation or customRecoil.Disabled then
-            self:PlayAnimation(data.ShootAnimation or ACT_VM_PRIMARYATTACK)
+            self:PlayAnimation(shootAnimation)
             self:QueueIdle()
         end
 
@@ -216,7 +223,7 @@ function SWEP:AttackBulletEffects(id, attackData)
             self:SetCustomRecoilTargetAngles(Angle(pitch, yaw, 0))
         end
     else
-        self:PlayAnimation(attackData.Animation or data.ShootAnimation or ACT_VM_PRIMARYATTACK)
+        self:PlayAnimation(shootAnimation)
         self:QueueIdle()
     end
 

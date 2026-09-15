@@ -79,7 +79,9 @@ function SWEP:ThinkIdle()
     local ct = CurTime()
     if ct > idleTime then
         self:SetIdleTime(0)
-        self:PlayAnimation(self.IdleAnimation or ACT_VM_IDLE)
+
+        local anim = self:FireHook("GetIdleAnimation")
+        self:PlayAnimation(anim or self.IdleAnimation or ACT_VM_IDLE)
     end
 end
 

@@ -8,7 +8,7 @@ local flashes = {
 
 function SWEP:AttackEffectMuzzleFlash(id, attackData)
     if self:FireHook("AttackEffectMuzzleFlash", id, attackData) then return end
-    if (game.SinglePlayer() or IsFirstTimePredicted()) then
+    if (CLIENT and game.SinglePlayer() or IsFirstTimePredicted()) then
         local data = self:GetAttackTable(id)
         local vm = self:VM()
 
@@ -19,20 +19,24 @@ function SWEP:AttackEffectMuzzleFlash(id, attackData)
 
         local flashEffect
 
-        if isstring(data.MuzzleFlash) then
-            flashEffect = data.MuzzleFlash
-        elseif istable(data.MuzzleFlash) then
-            flashEffect = data.MuzzleFlash[math.random(#data.MuzzleFlash)]
-        else
-            flashEffect = flashes[math.random(#flashes)]
+        if data.MuzzleFlash ~= false then
+            if isstring(data.MuzzleFlash) then
+                flashEffect = data.MuzzleFlash
+            elseif istable(data.MuzzleFlash) then
+                flashEffect = data.MuzzleFlash[math.random(#data.MuzzleFlash)]
+            else
+                flashEffect = flashes[math.random(#flashes)]
+            end
         end
 
-        ParticleEffectAttach(
-            flashEffect,
-            PATTACH_POINT_FOLLOW,
-            vm,
-            muzzle
-        )
+        if flashEffect then
+            ParticleEffectAttach(
+                flashEffect,
+                PATTACH_POINT_FOLLOW,
+                vm,
+                muzzle
+            )
+        end
 
         if CLIENT then
             local light = DynamicLight(vm:EntIndex())
