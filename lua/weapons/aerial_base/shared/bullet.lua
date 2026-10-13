@@ -182,7 +182,7 @@ function SWEP:AttackBulletEffects(id, attackData)
     if isstring(data.SoundLooping) then
         self:_AttackStartLoopingSound(id)
     elseif isstring(data.Sound) then
-        self:EmitSound(data.Sound, SNDLVL_GUNFIRE)
+        self:EmitSound(data.Sound, SNDLVL_GUNFIRE, 100, 1, CHAN_WEAPON)
     end
 
     if isstring(data.SoundLayer) then

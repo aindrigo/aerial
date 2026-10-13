@@ -156,7 +156,7 @@ function SWEP:ReloadAttackTimer(id)
         end
 
         local bulletsToAdd = 1
-        local target = math.min(currentMagazine + bulletsToAdd, reserve)
+        local target = currentMagazine + bulletsToAdd
         ply:SetAmmo(reserve - bulletsToAdd, data.Ammo)
 
         self:SetAttackMagazineCount(id, target)
