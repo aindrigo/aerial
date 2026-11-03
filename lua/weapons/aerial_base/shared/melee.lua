@@ -1,6 +1,5 @@
 function SWEP:AttackMelee(id)
     if self:FireHook("AttackMelee", id) then return end
-    local data = self:GetAttackTable(id)
     self:AttackMeleePreEffects(id)
     self:AttackSchedule(id, self.AttackMeleePerform)
 end

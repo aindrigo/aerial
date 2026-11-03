@@ -8,7 +8,7 @@ local flashes = {
 
 function SWEP:AttackEffectMuzzleFlash(id, attackData)
     if self:FireHook("AttackEffectMuzzleFlash", id, attackData) then return end
-    if (game.SinglePlayer() or IsFirstTimePredicted()) then
+    if (CLIENT and game.SinglePlayer() or IsFirstTimePredicted()) then
         local data = self:GetAttackTable(id)
         local vm = self:VM()
 
@@ -19,20 +19,24 @@ function SWEP:AttackEffectMuzzleFlash(id, attackData)
 
         local flashEffect
 
-        if isstring(data.MuzzleFlash) then
-            flashEffect = data.MuzzleFlash
-        elseif istable(data.MuzzleFlash) then
-            flashEffect = data.MuzzleFlash[math.random(#data.MuzzleFlash)]
-        else
-            flashEffect = flashes[math.random(#flashes)]
+        if data.MuzzleFlash ~= false then
+            if isstring(data.MuzzleFlash) then
+                flashEffect = data.MuzzleFlash
+            elseif istable(data.MuzzleFlash) then
+                flashEffect = data.MuzzleFlash[math.random(#data.MuzzleFlash)]
+            else
+                flashEffect = flashes[math.random(#flashes)]
+            end
         end
 
-        ParticleEffectAttach(
-            flashEffect,
-            PATTACH_POINT_FOLLOW,
-            vm,
-            muzzle
-        )
+        if flashEffect then
+            ParticleEffectAttach(
+                flashEffect,
+                PATTACH_POINT_FOLLOW,
+                vm,
+                muzzle
+            )
+        end
 
         if CLIENT then
             local light = DynamicLight(vm:EntIndex())
@@ -49,30 +53,25 @@ function SWEP:AttackEffectMuzzleFlash(id, attackData)
             light.dietime = CurTime() + 1
             light.size = 256
         end
-    end 
+    end
 end
 
-function SWEP:AttackEffectRecoil(id, attackData)
-    if self:FireHook("AttackEffectRecoil", id, attackData) then return end
-
+function SWEP:_AttackStartLoopingSound(id)
     local data = self:GetAttackTable(id)
-    local ply = attackData.Attacker
 
-    -- View punch
-    local recoil = attackData.Recoil
-    local recoilData = data.Recoil or {}
+    self._loopingAttackSounds = self._loopingAttackSounds or {}
+    if not self._loopingAttackSounds[id] then
+        local snd = CreateSound(self, data.SoundLooping)
+        snd:Play()
+        self._loopingAttackSounds[id] = snd
+    end
+end
 
-    local xPunch = recoilData.PunchX or 0.15
-    local zPunch = recoilData.PunchZ or 0.07
-
-    local punch = Angle(
-        util.SharedRandom("ARVPP", -recoil.z * zPunch, recoil.z * zPunch),
-        util.SharedRandom("ARVPY", 0, -recoil.x * xPunch),
-        0
-    )
-
-    ply:ViewPunch(punch)
-    if IsFirstTimePredicted() or game.SinglePlayer() then
-        ply:SetEyeAngles(ply:EyeAngles() + punch * 0.4)
+function SWEP:_AttackStopLoopingSound(id)
+    self._loopingAttackSounds = self._loopingAttackSounds or {}
+    if self._loopingAttackSounds[id] then
+        local snd = self._loopingAttackSounds[id]
+        snd:Stop()
+        self._loopingAttackSounds[id] = nil
     end
 end

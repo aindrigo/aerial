@@ -1,5 +1,6 @@
 # Aerial
 A GMod weapon base originally intended to be [Longsword](https://github.com/vingard/longsword) [(also)](https://github.com/bitfielddev/longsword) 3.
+NOT ready for production use, currently being tested on [Pinecrest 2](https://greywater.studio). Expect constant breaking changes.
 
 [Content Pack](https://steamcommunity.com/sharedfiles/filedetails/?id=3092301722)
 
@@ -29,4 +30,3 @@ if shouldDrawWeaponCrosshair and weapon:DoDrawCrosshair(CROSSHAIR_X, CROSSHAIR_Y
     return
 end
 ```
-

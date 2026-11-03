@@ -3,9 +3,9 @@ function SWEP:FireHook(name, ...)
     if istable(attachments) then
         for attachmentName, _ in pairs(attachments) do
             local attachment = self.Attachments[attachmentName]
-            if not istable(attachments) or not istable(attachments.Hooks) then continue end
+            if not istable(attachment) or not istable(attachment.Hooks) then continue end
 
-            local func = attachments.Hooks[name]
+            local func = attachment.Hooks[name]
             if not isfunction(func) then continue end
 
             local result = func(self, ...)
@@ -18,7 +18,14 @@ function SWEP:FireHook(name, ...)
     if not istable(self.Hooks) then return end
 
     local hookFunction = self.Hooks[name]
-    if not isfunction(hookFunction) then return end
+    if not isfunction(hookFunction) then
+        return hook.Run("Aerial_" .. name, self, ...)
+    end
 
-    return hookFunction(self, ...)
+    local value = hookFunction(self, ...)
+    if value == nil then
+        return hook.Run("Aerial_" .. name, self, ...)
+    end
+
+    return value
 end

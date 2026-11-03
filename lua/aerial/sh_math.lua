@@ -16,10 +16,12 @@ end
 function aerial.math.Lerp(frac, p1, p2)
     assert(type(p1) == type(p2), "type mismatch for p1 and p2")
     local minDist = 0.001
+    local minDistSqr = 0.000001
+    local minDistTri = 0.003
 
     if isvector(p1) then
         local dist = (p1 - p2):LengthSqr()
-        if math.abs(dist) <= minDist ^ 2 then
+        if math.abs(dist) <= minDistSqr then
             return p2
         end
 
@@ -29,7 +31,7 @@ function aerial.math.Lerp(frac, p1, p2)
         dist = dist.x + dist.y + dist.z
         -- idk
 
-        if math.abs(dist) <= minDist * 3 then
+        if math.abs(dist) <= minDistTri then
             return p2
         end
 
@@ -55,4 +57,25 @@ function aerial.math.RoundToMultiple(x, y)
     if math.fmod(x, y) == 0 then return x end
 
     return x + y - 1 - math.fmod(x + y - 1, y)
+end
+
+
+--- DeNANs a value, making it zero if NAN
+-- @realm shared
+-- @number x value
+function aerial.math.DeNAN(x)
+    if isvector(x) then
+        x.x = aerial.math.DeNAN(x.x)
+        x.y = aerial.math.DeNAN(x.y)
+        x.z = aerial.math.DeNAN(x.z)
+        return x
+    elseif isangle(x) then
+        x.p = aerial.math.DeNAN(x.p)
+        x.y = aerial.math.DeNAN(x.y)
+        x.r = aerial.math.DeNAN(x.r)
+        return x
+    end
+
+    if x ~= x then return 0 end
+    return x
 end

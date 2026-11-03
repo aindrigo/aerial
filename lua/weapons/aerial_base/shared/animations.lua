@@ -4,8 +4,12 @@ function SWEP:PlayAnimation(id)
     local sequence = isstring(id) and vm:LookupSequence(id) or vm:SelectWeightedSequence(id)
 
     if sequence <= 0 then
-        aerial.dprint("Invalid animation "..id.." played")
+        aerial.dprint("Invalid animation " .. id .. " played")
         return 0
+    end
+
+    if CLIENT then
+        vm:SetAnimTime(CurTime())
     end
 
     vm:ResetSequenceInfo()

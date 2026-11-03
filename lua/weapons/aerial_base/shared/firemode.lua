@@ -17,7 +17,7 @@ function SWEP:GetAttackFireModeData(attackId, fireMode)
     end
 
     if value == nil then
-        value = data.Automatic and aerial.enums.FIRE_MODE_AUTOMATIC or aerial.enums.FIRE_MODE_SEMIAUTOMATIC 
+        value = data.Automatic and aerial.enums.FIRE_MODE_AUTOMATIC or aerial.enums.FIRE_MODE_SEMIAUTOMATIC
     end
 
     if value == aerial.enums.FIRE_MODE_AUTOMATIC then
@@ -35,21 +35,35 @@ function SWEP:ToggleFireMode()
 
     local id = self:GetLastAttackName()
     local data = self:GetAttackTable(id)
-    
+
     local count = 0
     if istable(data.FireModes) then
         count = table.Count(data.FireModes)
     end
 
     if count <= 1 then return end
-    
+
     local currentMode = self:GetAttackFireMode(id)
-    local nextMode = (currentMode + 1) % count
+    local nextMode = currentMode + 1
+
+    if nextMode > count then
+        nextMode = 1
+    end
 
     self:SetAttackFireMode(id, nextMode)
     if not data.NoFireModeAnimation then
         local duration = self:PlayAnimation(data.FireModeAnimation or ACT_VM_FIREMODE)
         self:QueueIdle()
         self:SetFireModeTime(ct + duration)
+    else
+        if isnumber(data.FireModeTime) then
+            self:SetFireModeTime(ct + data.FireModeTime)
+        end
+
+        if isstring(data.FireModeSound) then
+            self:EmitSound(data.FireModeSound)
+        end
     end
+
+
 end

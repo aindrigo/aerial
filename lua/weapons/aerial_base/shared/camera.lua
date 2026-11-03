@@ -6,8 +6,8 @@ function SWEP:CalculateFOV()
         mod = mod * hookResult
     end
 
-    if istable(self.ADS) and isnumber(self.ADS.FOV) and self:GetADS() then
-        mod = mod * self.ADS.FOV
+    if istable(self.Aim) and isnumber(self.Aim.FOV) and self:GetAiming() then
+        mod = mod * self.Aim.FOV
     end
 
     return mod

@@ -27,6 +27,26 @@ SWEP.Primary.ClipSize = 12
 SWEP.Primary.DefaultClip = 12
 SWEP.Primary.MuzzleFlashColor = Color(201, 165, 112)
 
+SWEP.Primary.Spread = {}
+SWEP.Primary.Spread.Cone = 0.1
+SWEP.Primary.Spread.Min = -math.huge
+SWEP.Primary.Spread.Max = math.huge
+SWEP.Primary.Spread.ProlongedFireMult = 1.2
+SWEP.Primary.Spread.AimMult = 0.5
+SWEP.Primary.Spread.CrouchMult = 0.8
+SWEP.Primary.Spread.AirMult = 1.5
+SWEP.Primary.Spread.VelocityMult = 1.5
+
+SWEP.Primary.Recoil = {}
+SWEP.Primary.Recoil.MultiplierX = 2
+SWEP.Primary.Recoil.MultiplierY = 2
+SWEP.Primary.Recoil.RestTime = 0.5
+
+SWEP.Primary.Punch = {}
+SWEP.Primary.Punch.AmountX = 0
+SWEP.Primary.Punch.AmountY = 2
+SWEP.Primary.Punch.Smooth = false
+
 -- Fire modes
 -- SWEP.Primary.FireModes = {
 --     [0] = aerial.enums.FIRE_MODE_AUTOMATIC, -- 0 is default
@@ -43,8 +63,12 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.ShootAnimation = ACT_VM_SECONDARYATTACK
 
+SWEP.Secondary.Spread = SWEP.Primary.Spread
+SWEP.Secondary.Recoil = SWEP.Primary.Recoil
+SWEP.Secondary.Punch = SWEP.Primary.Punch
+
 SWEP.Hooks = {}
-SWEP.ADS = {}
+SWEP.Aim = {}
 
 SWEP.Bob = {}
 SWEP.Sway = {}
@@ -61,16 +85,20 @@ function SWEP:Reset()
     self:SetReloadTime(0)
     self:SetFireModeTime(0)
     self:SetCustomRecoilMode(aerial.enums.CUSTOM_RECOIL_MODE_COMPENSATING)
-    self:SetADS(false)
+    self:SetAiming(false)
     self:SetReloading(false)
     self:SetReloadFinished(false)
     self:SetReloadName("")
     self:SetCurrentAttackTime(0)
     self:SetCurrentAttackName("")
+    self:SetBurstFireCount(0)
+
+    self:SetPrimaryFireMode(1)
+    self:SetSecondaryFireMode(1)
 
     local zeroVec = Vector()
     local zeroAng = Angle()
-    self:SetRecoil(zeroVec)
+    self:SetShot(0)
     self:SetCustomRecoilPosition(zeroVec)
     self:SetCustomRecoilAngles(zeroAng)
     self:SetCustomRecoilTargetPosition(zeroVec)
@@ -79,8 +107,8 @@ function SWEP:Reset()
     if CLIENT then
         self:ResetMuzzleAttachment()
         self.m_aLastEyeAng = nil
-        self.m_vCurrentRecoilPosition = Vector()
-        self.m_aCurrentRecoilAngles = Angle()
+        self.m_vCurrentRecoilPosition = nil
+        self.m_aCurrentRecoilAngles = nil
     end
 
     local attachments = aerial.Attachments.Data[self:EntIndex()]
@@ -104,6 +132,10 @@ function SWEP:Deploy()
     self:FireHook("Deploy")
     self:Reset()
 
+    if self.DeploySound then
+        self:EmitSound(self.DeploySound)
+    end
+
     self:PlayAnimation(self.DeployAnimation or ACT_VM_DRAW)
     self:QueueIdle()
 
@@ -118,15 +150,64 @@ end
 
 function SWEP:OnReloaded()
     self:SetHoldType(self.HoldType)
-    if CLIENT and istable(self.ADS) then
-        self.ADS.MiddlePosition = nil
-        self.ADS.MiddleAngles = nil
-    end
 
     local attachments = aerial.Attachments.Data[self:EntIndex()]
     if istable(attachments) then
-        for name, data in pairs(attachments) do
+        for name, _ in pairs(attachments) do
             self:_RefreshAttachmentOverrides(name)
+        end
+    end
+
+    if CLIENT then
+        if istable(self.Aim) then
+            self.Aim.MiddlePosition = nil
+            self.Aim.MiddleAngles = nil
+        end
+
+        if istable(self._vmElements) then
+            for _, state in ipairs(self._vmElements) do
+                state.csModel:Remove()
+            end
+
+            self._vmElements = {}
+        end
+
+        if istable(self._wmElements) then
+            for _, state in ipairs(self._wmElements) do
+                state.csModel:Remove()
+            end
+
+            self._wmElements = {}
+        end
+
+        if IsValid(self.m_eWorldModel) then
+            self.m_eWorldModel:Remove()
+            self.m_eWorldModel = nil
+        end
+    end
+end
+
+function SWEP:OnRemove()
+    if CLIENT then
+        if IsValid(self.m_eWorldModel) then
+            self.m_eWorldModel:Remove()
+            self.m_eWorldModel = nil
+        end
+
+        if istable(self._vmElements) then
+            for _, state in ipairs(self._vmElements) do
+                state.csModel:Remove()
+            end
+
+            self._vmElements = nil
+        end
+
+        if istable(self._wmElements) then
+            for _, state in ipairs(self._wmElements) do
+                state.csModel:Remove()
+            end
+
+            self._wmElements = nil
         end
     end
 end
@@ -134,32 +215,34 @@ end
 function SWEP:SetupDataTables()
     self:FireHook("SetupDataTables")
 
-    self:NetworkVar("Float", "IdleTime") -- Used to get next idle time
-    self:NetworkVar("Float", "ReloadTime") -- Used to check reload end time/next bullet insert
-    self:NetworkVar("Float", "ReloadStartTime") -- Used for reload camera
-    self:NetworkVar("Float", "ReloadEndTime") -- Used for reload camera
-    self:NetworkVar("Float", "FireModeTime") -- Used to delay attacks/reload after setting firemode
-    self:NetworkVar("Float", "CurrentAttackTime") -- Used for delayed/automatic attacks
-    self:NetworkVar("Int", "PrimaryFireMode") -- Firemode for primary
-    self:NetworkVar("Int", "SecondaryFireMode") -- Firemode for secondary
-    self:NetworkVar("Int", "CustomRecoilMode") -- Recoil mode, see aerial.enums.CUSTOM_RECOIL_MODE
-    self:NetworkVar("String", "ReloadName") -- Name for attack table when finishing reload
-    self:NetworkVar("String", "LastAttackName") -- Used for reloading, changing firemode, etc
-    self:NetworkVar("String", "CurrentAttackName") -- See CurrentAttackTime
-    self:NetworkVar("Bool", "ADS") -- ADS state
-    self:NetworkVar("Bool", "Reloading") -- To check if reloading or not
-    self:NetworkVar("Bool", "ReloadFinished") -- To check if reload has finished, used in bullet by bullet reload
-    self:NetworkVar("Vector", "Recoil") -- Recoil value
-    self:NetworkVar("Vector", "CustomRecoilPosition") -- Custom recoil values, used for firing when aiming downsights
+    self:NetworkVar("Float", "IdleTime")                    -- Used to get next idle time
+    self:NetworkVar("Float", "ReloadTime")                  -- Used to check reload end time/next bullet insert
+    self:NetworkVar("Float", "ReloadStartTime")             -- Used for reload camera
+    self:NetworkVar("Float", "ReloadEndTime")               -- Used for reload camera
+    self:NetworkVar("Float", "FireModeTime")                -- Used to delay attacks/reload after setting firemode
+    self:NetworkVar("Float", "CurrentAttackTime")           -- Used for delayed/automatic attacks
+    self:NetworkVar("Int", "PrimaryFireMode")               -- Firemode for primary
+    self:NetworkVar("Int", "SecondaryFireMode")             -- Firemode for secondary
+    self:NetworkVar("Int", "CustomRecoilMode")              -- Recoil mode, see aerial.enums.CUSTOM_RECOIL_MODE
+    self:NetworkVar("Int", "Shot")
+    self:NetworkVar("Int", "BurstFireCount")
+    self:NetworkVar("String", "ReloadName")                 -- Name for attack table when finishing reload
+    self:NetworkVar("String", "LastAttackName")             -- Used for reloading, changing firemode, etc
+    self:NetworkVar("String", "CurrentAttackName")          -- See CurrentAttackTime
+    self:NetworkVar("Bool", "Aiming")                       -- Aiming state
+    self:NetworkVar("Bool", "Reloading")                    -- To check if reloading or not
+    self:NetworkVar("Bool", "ReloadFinished")               -- To check if reload has finished, used in bullet by bullet reload
+    self:NetworkVar("Vector", "CustomRecoilPosition")       -- Custom recoil values, used for firing when aiming downsights
     self:NetworkVar("Vector", "CustomRecoilTargetPosition") -- Self-explanatory
-    self:NetworkVar("Angle", "CustomRecoilAngles") -- Self-explanatory
-    self:NetworkVar("Angle", "CustomRecoilTargetAngles") -- Self-explanatory
+    self:NetworkVar("Angle", "CustomRecoilAngles")          -- Self-explanatory
+    self:NetworkVar("Angle", "CustomRecoilTargetAngles")    -- Self-explanatory
 
-    if istable(self.AttackTables) then
-        for id, data in pairs(self.AttackTables) do
-            self:NetworkVar("Float", "Next"..id.."Fire")
-            self:NetworkVar("Int", id.."MagazineCount")
-            self:NetworkVar("Int", id.."FireMode")
-        end
+    --[[
+    for id, data in pairs(self:GetAttackTables()) do
+        self:NetworkVar("Float", "Next"..id.."Fire")
+        self:NetworkVar("Float", "Last"..id.."Fire")
+        self:NetworkVar("Int", id.."MagazineCount")
+        self:NetworkVar("Int", id.."FireMode")
     end
+    ]]
 end

@@ -34,13 +34,13 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         local bone = vm:LookupBone(cosmeticData.Bone)
 
         if not bone then
-            aerial.dprint("No such bone "..cosmeticData.Bone)
+            aerial.dprint("No such bone " .. cosmeticData.Bone)
             return
         end
 
         matrix = vm:GetBoneMatrix(bone)
         if not matrix then
-            aerial.dprint("Could not get bone matrix for "..cosmeticData.Bone)
+            aerial.dprint("Could not get bone matrix for " .. cosmeticData.Bone)
             return
         end
     else
@@ -48,6 +48,7 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         matrix:Translate(vm:GetPos())
         matrix:Rotate(vm:GetAngles())
     end
+
 
     if isvector(cosmeticData.Position) then
         matrix:Translate(cosmeticData.Position)
@@ -57,6 +58,9 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         matrix:Rotate(cosmeticData.Angles)
     end
 
+    if isnumber(cosmeticData.Scale) then
+        model:SetModelScale(cosmeticData.Scale)
+    end
 
     model:SetPos(matrix:GetTranslation())
     model:SetAngles(matrix:GetAngles())
@@ -70,7 +74,7 @@ function SWEP:VMDrawAttachment(name, data, vm, flags)
         end
 
         self:VMDrawReticule(name, data, vm, model, matrix, cosmeticData.Reticule)
-        
+
         if shouldMask then
             aerial.render.Unmask()
         end
@@ -121,7 +125,7 @@ function SWEP:VMDrawRenderTarget(name, data, vm, model, renderTargetData)
     render.OverrideAlphaWriteEnable(false, false)
 
     if renderTargetData.SubMaterial then
-        model:SetSubMaterial(renderTargetData.SubMaterial, "!"..aerial.renderTarget.material:GetName())
+        model:SetSubMaterial(renderTargetData.SubMaterial, "!" .. aerial.renderTarget.material:GetName())
     end
 end
 

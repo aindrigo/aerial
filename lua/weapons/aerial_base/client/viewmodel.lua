@@ -9,9 +9,6 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
 
     local ft = (ct - self.m_fLastCurTime) * GetConVar("host_timescale"):GetFloat()
 
-    local ply = self:GetOwner()
-    local vm = self:VM()
-
     -- Find muzzle
     local muzzleAttachment = self:GetMuzzleAttachment()
 
@@ -23,21 +20,37 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     local moveSpeed = self:GetOwnerSpeed()
 
     -- Calculations
-    self:VMADS(ct, ft, matrix)
+    self:VMAim(ct, ft, matrix)
     self:VMViewSway(ct, ft, muzzleAttachment, matrix)
-    self:VMCustomRecoil(ct, ft, muzzleAttachment, matrix)
+    -- self:VMRecoil(ct, ft, muzzleAttachment, matrix)
+    self:VMCustomRecoilEffects(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
-    if ( type(self.VMOffset) == "table" ) then
-        if ( type(self.VMOffset.Position) == "Vector" ) then
-            matrix:Translate(self.VMOffset.Position)
+    -- Offset
+    local inverseAimFraction = 1 - (self.m_fAimFraction or 0)
+
+    local vmSettings = self.VMSettings or {}
+    if istable(vmSettings.Offset) then
+        local offset = vmSettings.Offset
+        if isvector(offset.Position) then
+            matrix:Translate(offset.Position * inverseAimFraction)
         end
 
-        if ( type(self.VMOffset.Angles) == "Angle" ) then
-            matrix:Rotate(self.VMOffset.Angles)
+        if isangle(offset.Angles) then
+            matrix:Rotate(offset.Angles * inverseAimFraction)
         end
     end
 
+    if istable(vmSettings.CenteredOffset) and aerial.console.center:GetBool() then
+        local offset = vmSettings.CenteredOffset
+        if isvector(offset.Position) then
+            matrix:Translate(offset.Position * inverseAimFraction)
+        end
+
+        if isangle(offset.Angles) then
+            matrix:Rotate(offset.Angles * inverseAimFraction)
+        end
+    end
 
     eyePos, eyeAng = matrix:GetTranslation(), matrix:GetAngles()
     self.m_fLastCurTime = ct
@@ -63,11 +76,11 @@ function SWEP:VMViewBob(ct, ft, moveSpeed, muzzle, matrix)
         bobFrequency = bobFrequency * bobTable.FrequencyMultiplier
     end
 
-    if self:GetADS() then
-        local adsAmplitudeMultiplier = bobTable.ADSAmplitudeMultiplier or 0.5
-        if isnumber(adsAmplitudeMultiplier) then
-            bobAmplitude = bobAmplitude * adsAmplitudeMultiplier
-            backMultiplier = backMultiplier * adsAmplitudeMultiplier
+    if self:GetAiming() then
+        local aimAmplitudeMultiplier = bobTable.AimingAmplitudeMultiplier or 0.5
+        if isnumber(aimAmplitudeMultiplier) then
+            bobAmplitude = bobAmplitude * aimAmplitudeMultiplier
+            backMultiplier = backMultiplier * aimAmplitudeMultiplier
         end
     end
 
@@ -126,9 +139,9 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     local difference = eyeAng - self.m_aLastEyeAng
 
     local speed = self.Sway.Speed or 6
-    if self:GetADS() then
-        if istable(self.ADS) and isnumber(self.ADS.SwaySpeed) then
-            speed = self.ADS.SwaySpeed
+    if self:GetAiming() then
+        if istable(self.Aim) and isnumber(self.Aim.SwaySpeed) then
+            speed = self.Aim.SwaySpeed
         end
 
         speed = speed * 2
@@ -145,8 +158,8 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     local range = 30
     local multiplier = swayTable.Multiplier or 1
 
-    if self:GetADS() then
-        local adsMultiplier = swayTable.ADSMultiplier or 0.6
+    if self:GetAiming() then
+        local adsMultiplier = swayTable.AimingMultiplier or 0.6
         if isnumber(adsMultiplier) then
             multiplier = multiplier * adsMultiplier
         end
@@ -180,43 +193,50 @@ function SWEP:VMViewSway(ct, ft, muzzle, matrix)
     matrix:Translate(-swayOrigin)
 end
 
-function SWEP:VMADS(ct, ft, matrix)
-    if not istable(self.ADS) or not isvector(self.ADS.Position) or not isangle(self.ADS.Angles) then return end
-    local adsData = self.ADS
+function SWEP:VMAim(ct, ft, matrix)
+    if not istable(self.Aim) or not isvector(self.Aim.Position) or not isangle(self.Aim.Angles) then return end
+    local aimData = self.Aim
 
-    local position = adsData.Position
-    local angles = adsData.Angles
+    local position = aimData.Position
+    local angles = aimData.Angles
 
-    if not isvector(adsData.MiddlePosition) then
-        adsData.MiddlePosition = position + angles:Up() * -4
+    if not isvector(aimData.MiddlePosition) then
+        aimData.MiddlePosition = position + angles:Up() * -4
     end
 
-    if not isangle(adsData.MiddleAngles) then
-        adsData.MiddleAngles = angles / 2
+    if not isangle(aimData.MiddleAngles) then
+        aimData.MiddleAngles = angles / 2
     end
 
-    local targetFraction = self:GetADS() and 1 or 0
-    if targetFraction == 1 and self.m_fADSFraction == 1 then
+    local targetFraction = self:GetAiming() and 1 or 0
+    if targetFraction == 1 and self.m_fAimFraction == 1 then
         matrix:Rotate(angles)
         matrix:Translate(position)
         return
     end
 
-    self.m_fADSFraction = Lerp(ft * (adsData.Speed or 12), self.m_fADSFraction or 0, targetFraction)
-    matrix:Rotate(math.QuadraticBezier(self.m_fADSFraction, Angle(), adsData.MiddleAngles, angles))
-    matrix:Translate(math.QuadraticBezier(self.m_fADSFraction, Vector(), adsData.MiddlePosition, position))
+    self.m_fAimFraction = Lerp(ft * 12 * (aimData.Speed or 1), self.m_fAimFraction or 0, targetFraction)
+    matrix:Rotate(math.QuadraticBezier(self.m_fAimFraction, Angle(), aimData.MiddleAngles, angles))
+    matrix:Translate(math.QuadraticBezier(self.m_fAimFraction, Vector(), aimData.MiddlePosition, position))
 end
 
-function SWEP:VMCustomRecoil(ct, ft, muzzle, matrix)
+function SWEP:VMCustomRecoilEffects(ct, ft, muzzle, matrix)
     local currentPosition = self:GetCustomRecoilPosition()
     local currentAngles = self:GetCustomRecoilAngles()
 
-    local smoothPosition = self.m_vCurrentRecoilPosition or currentPosition
-    local smoothAngles = self.m_aCurrentRecoilAngles or currentAngles
+    local smoothPosition = self.m_vCurrentRecoilPosition
+    local smoothAngles = self.m_aCurrentRecoilAngles
 
-    -- Smooth it out because tickrate can be low
-    smoothPosition = aerial.math.Lerp(ft * 48, smoothPosition, currentPosition)
-    smoothAngles = aerial.math.Lerp(ft * 48, smoothAngles, currentAngles)
+    if not isvector(smoothPosition) or not isangle(smoothAngles) then
+        smoothPosition = Vector(currentPosition.x, currentPosition.y, currentPosition.z)
+        smoothAngles = Angle(currentAngles.p, currentAngles.y, currentAngles.r)
+    else
+        smoothPosition = aerial.math.Lerp(ft * 48, smoothPosition, currentPosition)
+        smoothAngles = aerial.math.Lerp(ft * 48, smoothAngles, currentAngles)
+    end
+
+    smoothPosition = aerial.math.DeNAN(smoothPosition)
+    smoothAngles = aerial.math.DeNAN(smoothAngles)
 
     self.m_vCurrentRecoilPosition = smoothPosition
     self.m_aCurrentRecoilAngles = smoothAngles
@@ -230,16 +250,99 @@ function SWEP:VMCustomRecoil(ct, ft, muzzle, matrix)
     matrix:Translate(-muzzle.Pos)
 end
 
+-- function SWEP:VMRecoil(ct, ft, muzzle, matrix)
+--     local id = self:GetLastAttackName()
+--     local attackData = self:GetLastAttackTable()
+--     local recoil = self:AttackCalculateRecoil(id, attackData)
+
+--     if self:GetAiming() then
+--         self:VMRecoilAim(ct, ft, muzzle, matrix, attackData, recoil)
+--         return
+--     end
+
+--     local lerpSpeed = 16
+--     if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
+--         recoil.z = 0 -- reset
+--         recoil.x = 0
+--         lerpSpeed = 4
+--     else
+--         recoil.z = recoil.z * 0.5
+--         recoil.x = -recoil.x * 0.5
+--     end
+
+--     local desiredAngles = Angle(recoil.x, recoil.z, 0)
+--     local smoothAngles = self.m_aCurrentRecoilAngles or desiredAngles
+--     smoothAngles = aerial.math.Lerp(ft * lerpSpeed, smoothAngles, desiredAngles)
+
+--     self.m_aCurrentRecoilAngles = smoothAngles
+
+--     matrix:Rotate(smoothAngles)
+-- end
+
+
+-- function SWEP:VMRecoilAim(ct, ft, muzzle, matrix, attackData, recoil)
+--     local lerpSpeed = 16
+
+--     if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
+--         recoil.z = 0 -- reset
+--         recoil.x = 0
+--         lerpSpeed = 4
+--     else
+--         recoil.z = recoil.z * (attackData.Recoil.CamAimMult or 0.4)
+--         recoil.x = -recoil.x * (attackData.Recoil.CamAimMult or 0.4)
+--     end
+
+--     local desiredPos = Vector(0, recoil.z * (attackData.Recoil.CamAimDamp or 0.6), -recoil.x * (attackData.Recoil.CamAimDamp or 0.6))
+--     local desiredAngles = Angle(recoil.x, recoil.z, 0)
+
+--     local smoothPos = self.m_aCurrentRecoilPosition or desiredPos
+--     local smoothAngles = self.m_aCurrentRecoilAngles or desiredAngles
+
+--     smoothPos = aerial.math.Lerp(ft * lerpSpeed, smoothPos, desiredPos)
+--     smoothAngles = aerial.math.Lerp(ft * lerpSpeed, smoothAngles, desiredAngles)
+
+--     self.m_aCurrentRecoilPosition = smoothPos
+--     self.m_aCurrentRecoilAngles = smoothAngles
+
+--     matrix:Translate(smoothPos)
+--     matrix:Translate(muzzle.Pos)
+--     matrix:Rotate(smoothAngles)
+--     matrix:Translate(-muzzle.Pos)
+-- end
+
+function SWEP:VMDrawElement(index, elementData, vm, flags)
+    local state = self._vmElements[index]
+    if not istable(state) then
+        state = {}
+        local csModel = ClientsideModel(elementData.Model)
+        csModel:SetParent(vm)
+        csModel:SetNoDraw(true)
+        if elementData.BoneMerge then
+            csModel:AddEffects(EF_BONEMERGE)
+        end
+
+        if elementData.Scale then
+            csModel:SetModelScale(elementData.Scale)
+        end
+
+        state.csModel = csModel
+        self._vmElements[index] = state
+    end
+
+    state.csModel:DrawModel(flags)
+end
+
 function SWEP:ViewModelDrawn(vm, flags)
     local attachments = aerial.Attachments.Data[self:EntIndex()] or {}
     for name, data in pairs(attachments) do
         self:VMDrawAttachment(name, data, vm, flags)
     end
 
-    -- local vmSettings = self.VMSettings or {}
-    -- if istable(vmSettings.Elements) then
-    --     for _, data in ipairs(vmSettings.Elements) do
-
-    --     end
-    -- end
+    local vmSettings = self.VMSettings or {}
+    if istable(vmSettings.Elements) then
+        self._vmElements = self._vmElements or {}
+        for index, elementData in ipairs(vmSettings.Elements) do
+            self:VMDrawElement(index, elementData, vm, flags)
+        end
+    end
 end

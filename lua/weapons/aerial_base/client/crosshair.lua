@@ -1,16 +1,26 @@
 function SWEP:GetCrosshairAlpha()
-    if self:GetReloading() or self:GetADS() then return 0 end
+    local v = self:FireHook("GetCrosshairAlpha")
+    if isnumber(v) then
+        return v
+    end
+
+    if self:GetReloading() or (self:GetAiming() and istable(self.Aim) and not self.Aim.Crosshair) then return 0 end
 
     return aerial.console.crosshair.colorAlpha:GetInt()
 end
 
 function SWEP:GetCrosshairGap(static)
+    local v = self:FireHook("GetCrosshairGap", static)
+    if isnumber(v) then
+        return v
+    end
+
     local attackData = self:GetLastAttackTable()
     local spreadData = attackData.Spread or {}
 
-    local base = spreadData.Cone or 0.2
+    local base = spreadData.Cone
     if not static then
-        base = base * self:_GetSpreadModifier(spreadData)
+        base = base * self:AttackGetSpreadModifier(self:GetLastAttackName(), attackData)
     end
 
     base = base - aerial.console.crosshair.gapAdditive:GetFloat()
@@ -19,7 +29,43 @@ function SWEP:GetCrosshairGap(static)
     return base * aerial.console.crosshair.gap:GetFloat()
 end
 
+local lastx = 0
+local lasty = 0
+function SWEP:GetCrosshairPos(x, y)
+    local id = self:GetLastAttackName()
+    local attackData = self:GetLastAttackTable()
+
+    if not attackData.Recoil or not self:GetAiming() then
+        return x, y
+    end
+
+    local lerpSpeed = 16
+    local recoil = self:AttackCalculateRecoil(id, attackData)
+    if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
+        recoil.z = 0 -- reset
+        recoil.x = 0
+        lerpSpeed = 4
+    else
+        recoil.z = -recoil.z * 14 -- this seems to be the magic number
+        recoil.x = -recoil.x * 14
+    end
+
+    recoil.z = Lerp(FrameTime() * lerpSpeed, lastx, recoil.z)
+    recoil.x = Lerp(FrameTime() * lerpSpeed, lasty, recoil.x)
+    lastx = recoil.z
+    lasty = recoil.x
+
+    return x + recoil.z, y + recoil.x
+end
+
 function SWEP:DoDrawCrosshair(x, y)
+    local attackData = self:GetLastAttackTable()
+    if attackData.NoCrosshair == true then
+        return false
+    end
+
+    x, y = self:GetCrosshairPos(x, y)
+
     local ft = FrameTime()
     local length = aerial.console.crosshair.length:GetFloat()
     local thickness = aerial.console.crosshair.thickness:GetFloat()
@@ -48,7 +94,8 @@ function SWEP:DoDrawCrosshair(x, y)
         aerial.ui.DrawLine(x, y - gap, x, y - gap - length, outlineThickness)
     end
 
-    local red, green, blue = aerial.console.crosshair.colorRed:GetInt(), aerial.console.crosshair.colorGreen:GetInt(), aerial.console.crosshair.colorBlue:GetInt()
+    local red, green, blue = aerial.console.crosshair.colorRed:GetInt(), aerial.console.crosshair.colorGreen:GetInt(),
+        aerial.console.crosshair.colorBlue:GetInt()
     surface.SetDrawColor(red, green, blue, alpha)
 
     aerial.ui.DrawLine(x + gap, y, x + gap + length, y, thickness)
@@ -64,11 +111,12 @@ function SWEP:DoDrawCrosshair(x, y)
             local outlineThickness = thicknessDot + outline
 
             surface.SetDrawColor(0, 0, 0, alpha)
-            surface.DrawRect(x - (thicknessDot + outline) / 2, y - (thicknessDot + outline) / 2, outlineThickness, outlineThickness)
+            surface.DrawRect(x - (thicknessDot + outline) / 2, y - (thicknessDot + outline) / 2, outlineThickness,
+                outlineThickness)
             surface.SetDrawColor(red, green, blue, alpha)
         end
 
-        
+
         surface.DrawRect(x - thicknessDot / 2, y - thicknessDot / 2, thicknessDot, thicknessDot)
     end
 

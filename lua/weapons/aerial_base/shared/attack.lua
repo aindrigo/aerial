@@ -1,10 +1,20 @@
 function SWEP:GetNextAttack(id)
-    local func = self["GetNext"..id.."Fire"]
+    local func = self["GetNext" .. id .. "Fire"]
     return func(self)
 end
 
 function SWEP:SetNextAttack(id, value)
-    local func = self["SetNext"..id.."Fire"]
+    local func = self["SetNext" .. id .. "Fire"]
+    return func(self, value)
+end
+
+function SWEP:GetLastAttack(id)
+    local func = self["GetLast" .. id .. "Fire"]
+    return func(self)
+end
+
+function SWEP:SetLastAttack(id, value)
+    local func = self["SetLast" .. id .. "Fire"]
     return func(self, value)
 end
 
@@ -24,7 +34,9 @@ function SWEP:BuildAttackData(id)
     return attackData
 end
 
-function SWEP:AttackTakeAmmo(id, count)
+function SWEP:AttackTakeAmmo(id, attackData, count)
+    if self:FireHook("AttackTakeAmmo", id, attackData, count) then return end
+
     local data = self:GetAttackTable(id)
     local flags = data.Flags or 0
 
@@ -86,10 +98,28 @@ function SWEP:Attack(id)
     end
 end
 
+function SWEP:AttackCancel(id)
+    local data = self:GetAttackTable(id)
+    local attackType = data.AttackType or aerial.enums.ATTACK_TYPE_BULLET
+
+    local chargeData = data.Charge
+    if istable(chargeData) and chargeData.Type == aerial.enums.CHARGE_TYPE_HOLD and isstring(chargeData.CancelSound) then
+        self:EmitSound(chargeData.CancelSound)
+    end
+
+    if attackType == aerial.enums.ATTACK_TYPE_BULLET then
+        self:AttackBulletCancel(id)
+    end
+end
+
 function SWEP:AttackHitEntity(id, attackData, traceResult)
     if self:FireHook("AttackHitEntity", id, attackData) then return end
 
     local data = self:GetAttackTable(id)
+
+    local victim = traceResult.Entity
+    local hitGroup = traceResult.HitGroup
+
     local dmgInfo = DamageInfo()
     dmgInfo:SetDamage(attackData.Damage)
     dmgInfo:SetAttacker(attackData.Attacker)
@@ -100,58 +130,28 @@ function SWEP:AttackHitEntity(id, attackData, traceResult)
     dmgInfo:SetDamagePosition(traceResult.HitPos)
     dmgInfo:SetDamageForce(traceResult.Normal * (data.Force or 1))
 
-    traceResult.Entity:DispatchTraceAttack(dmgInfo, traceResult)
-end
 
-function SWEP:AttackCalculateRecoil(id, attackData)
-    local hookResult = self:FireHook("AttackCalculateRecoil", id, ply)
-    if isvector(hookResult) then
-        return hookResult
+    if istable(data.HitGroupMultipliers) then
+        local mul = data.HitGroupMultipliers[hitGroup]
+        if isnumber(mul) then
+            dmgInfo:ScaleDamage(mul)
+        end
     end
 
-    local data = self:GetAttackTable(id)
-
-    local ply = attackData.Attacker
-    local recoilData = data.Recoil or {}
-    local globalRecoilData = self.Recoil or {}
-
-    local compensation = 1 / (globalRecoilData.Compensation or 1)
-
-    local min = recoilData.Min or 0
-    local max = recoilData.Max or 1
-
-    local x = util.SharedRandom("ARRX"..ply:SteamID(), recoilData.MinX or min, recoilData.MaxX or max)
-    local z = util.SharedRandom("ARRZ"..ply:SteamID(), recoilData.MinZ or min, recoilData.MaxZ or max)
-
-    local currentRecoil = self:GetRecoil() * compensation
-    return currentRecoil + Vector(x, 0, z)
-end
-
-function SWEP:AttackCalculateSpread(id, attackData, index)
-    local hookResult = self:FireHook("AttackCalculateSpread", id, attackData, index)
-    if isvector(hookResult) then
-        return hookResult
+    local ammoData = self:FireHook("GetAmmoData", id)
+    if not istable(ammoData) then
+        ammoData = game.GetAmmoData(game.GetAmmoID(data.Ammo))
+    elseif isnumber(ammoData.aerial_DamageMultiplier) then
+        dmgInfo:ScaleDamage(ammoData.aerial_DamageMultiplier)
     end
 
-    local data = self:GetAttackTable(id)
+    if victim:IsPlayer() then
+        hook.Run("ScalePlayerDamage", victim, hitGroup, dmgInfo)
+    end
 
-    local ply = attackData.Attacker
-    local spreadData = data.Spread or {}
+    self:FireHook("AttackScaleDamage", id, dmgInfo, hitGroup)
 
-    local cone = Vector(spreadData.Cone, 0, spreadData.Cone)
-    cone = cone * attackData.Recoil * (spreadData.RecoilMod or 1)
-
-    local mod = self:_GetSpreadModifier(spreadData)
-    cone:Mul(mod)
-    cone = cone / 2
-
-    local min = spreadData.Min or -math.huge
-    local max = spreadData.Max or math.huge
-
-    return Vector(
-        math.Clamp(util.SharedRandom("ARSX"..tostring(index)..ply:SteamID(), -cone.x, cone.x), spreadData.MinX or min, spreadData.MaxX or max),
-        0,
-        math.Clamp(util.SharedRandom("ARSZ"..tostring(index)..ply:SteamID(), -cone.z, cone.z), spreadData.MinZ or min, spreadData.MaxZ or max)
-    )
+    if SERVER then
+        victim:TakeDamageInfo(dmgInfo)
+    end
 end
-
