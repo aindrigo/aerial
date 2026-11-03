@@ -208,7 +208,7 @@ function SWEP:AttackBulletEffects(id, attackData)
         if not customRecoil.Disabled then
             local force = customRecoil.Force
             if not force then
-                force = (attackData.Damage * (attackData.ShotCount or 1)) / 6
+                force = (attackData.Damage * (attackData.ShotCount or 1)) / 12
             end
 
             local yaw = attackData.Recoil.x * 0.2

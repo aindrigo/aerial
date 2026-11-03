@@ -58,3 +58,24 @@ function aerial.math.RoundToMultiple(x, y)
 
     return x + y - 1 - math.fmod(x + y - 1, y)
 end
+
+
+--- DeNANs a value, making it zero if NAN
+-- @realm shared
+-- @number x value
+function aerial.math.DeNAN(x)
+    if isvector(x) then
+        x.x = aerial.math.DeNAN(x.x)
+        x.y = aerial.math.DeNAN(x.y)
+        x.z = aerial.math.DeNAN(x.z)
+        return x
+    elseif isangle(x) then
+        x.p = aerial.math.DeNAN(x.p)
+        x.y = aerial.math.DeNAN(x.y)
+        x.r = aerial.math.DeNAN(x.r)
+        return x
+    end
+
+    if x ~= x then return 0 end
+    return x
+end

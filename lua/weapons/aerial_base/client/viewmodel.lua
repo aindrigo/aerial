@@ -22,7 +22,7 @@ function SWEP:GetViewModelPosition(eyePos, eyeAng)
     -- Calculations
     self:VMAim(ct, ft, matrix)
     self:VMViewSway(ct, ft, muzzleAttachment, matrix)
-    self:VMRecoil(ct, ft, muzzleAttachment, matrix)
+    -- self:VMRecoil(ct, ft, muzzleAttachment, matrix)
     self:VMCustomRecoilEffects(ct, ft, muzzleAttachment, matrix)
     self:VMViewBob(ct, ft, moveSpeed, muzzleAttachment, matrix)
 
@@ -220,37 +220,6 @@ function SWEP:VMAim(ct, ft, matrix)
     matrix:Translate(math.QuadraticBezier(self.m_fAimFraction, Vector(), aimData.MiddlePosition, position))
 end
 
-
-function SWEP:VMRecoilAim(ct, ft, muzzle, matrix, attackData, recoil)
-    local lerpSpeed = 16
-
-    if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
-        recoil.z = 0 -- reset
-        recoil.x = 0
-        lerpSpeed = 4
-    else
-        recoil.z = recoil.z * (attackData.Recoil.CamAimMult or 0.4)
-        recoil.x = -recoil.x * (attackData.Recoil.CamAimMult or 0.4)
-    end
-
-    local desiredPos = Vector(0, recoil.z * (attackData.Recoil.CamAimDamp or 0.6), -recoil.x * (attackData.Recoil.CamAimDamp or 0.6))
-    local desiredAngles = Angle(recoil.x, recoil.z, 0)
-
-    local smoothPos = self.m_aCurrentRecoilPosition or desiredPos
-    local smoothAngles = self.m_aCurrentRecoilAngles or desiredAngles
-
-    smoothPos = aerial.math.Lerp(ft * lerpSpeed, smoothPos, desiredPos)
-    smoothAngles = aerial.math.Lerp(ft * lerpSpeed, smoothAngles, desiredAngles)
-
-    self.m_aCurrentRecoilPosition = smoothPos
-    self.m_aCurrentRecoilAngles = smoothAngles
-
-    matrix:Translate(smoothPos)
-    matrix:Translate(muzzle.Pos)
-    matrix:Rotate(smoothAngles)
-    matrix:Translate(-muzzle.Pos)
-end
-
 function SWEP:VMCustomRecoilEffects(ct, ft, muzzle, matrix)
     local currentPosition = self:GetCustomRecoilPosition()
     local currentAngles = self:GetCustomRecoilAngles()
@@ -266,6 +235,9 @@ function SWEP:VMCustomRecoilEffects(ct, ft, muzzle, matrix)
         smoothAngles = aerial.math.Lerp(ft * 48, smoothAngles, currentAngles)
     end
 
+    smoothPosition = aerial.math.DeNAN(smoothPosition)
+    smoothAngles = aerial.math.DeNAN(smoothAngles)
+
     self.m_vCurrentRecoilPosition = smoothPosition
     self.m_aCurrentRecoilAngles = smoothAngles
 
@@ -278,35 +250,65 @@ function SWEP:VMCustomRecoilEffects(ct, ft, muzzle, matrix)
     matrix:Translate(-muzzle.Pos)
 end
 
-function SWEP:VMRecoil(ct, ft, muzzle, matrix)
-    local id = self:GetLastAttackName()
-    local attackData = self:GetLastAttackTable()
-    local recoil = self:AttackCalculateRecoil(id, attackData)
+-- function SWEP:VMRecoil(ct, ft, muzzle, matrix)
+--     local id = self:GetLastAttackName()
+--     local attackData = self:GetLastAttackTable()
+--     local recoil = self:AttackCalculateRecoil(id, attackData)
 
-    if self:GetAiming() then
-        self:VMRecoilAim(ct, ft, muzzle, matrix, attackData, recoil)
-        return
-    end
+--     if self:GetAiming() then
+--         self:VMRecoilAim(ct, ft, muzzle, matrix, attackData, recoil)
+--         return
+--     end
 
-    local lerpSpeed = 16
-    if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
-        recoil.z = 0 -- reset
-        recoil.x = 0
-        lerpSpeed = 4
-    else
-        recoil.z = recoil.z * 0.5
-        recoil.x = -recoil.x * 0.5
-    end
+--     local lerpSpeed = 16
+--     if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
+--         recoil.z = 0 -- reset
+--         recoil.x = 0
+--         lerpSpeed = 4
+--     else
+--         recoil.z = recoil.z * 0.5
+--         recoil.x = -recoil.x * 0.5
+--     end
 
-    local desiredAngles = Angle(recoil.x, recoil.z, 0)
-    local smoothAngles = self.m_aCurrentRecoilAngles or desiredAngles
-    smoothAngles = aerial.math.Lerp(ft * lerpSpeed, smoothAngles, desiredAngles)
+--     local desiredAngles = Angle(recoil.x, recoil.z, 0)
+--     local smoothAngles = self.m_aCurrentRecoilAngles or desiredAngles
+--     smoothAngles = aerial.math.Lerp(ft * lerpSpeed, smoothAngles, desiredAngles)
 
-    self.m_aCurrentRecoilAngles = smoothAngles
+--     self.m_aCurrentRecoilAngles = smoothAngles
 
-    matrix:Rotate(smoothAngles)
-end
+--     matrix:Rotate(smoothAngles)
+-- end
 
+
+-- function SWEP:VMRecoilAim(ct, ft, muzzle, matrix, attackData, recoil)
+--     local lerpSpeed = 16
+
+--     if CurTime() > (self:LastShootTime() + attackData.Recoil.RestTime) then
+--         recoil.z = 0 -- reset
+--         recoil.x = 0
+--         lerpSpeed = 4
+--     else
+--         recoil.z = recoil.z * (attackData.Recoil.CamAimMult or 0.4)
+--         recoil.x = -recoil.x * (attackData.Recoil.CamAimMult or 0.4)
+--     end
+
+--     local desiredPos = Vector(0, recoil.z * (attackData.Recoil.CamAimDamp or 0.6), -recoil.x * (attackData.Recoil.CamAimDamp or 0.6))
+--     local desiredAngles = Angle(recoil.x, recoil.z, 0)
+
+--     local smoothPos = self.m_aCurrentRecoilPosition or desiredPos
+--     local smoothAngles = self.m_aCurrentRecoilAngles or desiredAngles
+
+--     smoothPos = aerial.math.Lerp(ft * lerpSpeed, smoothPos, desiredPos)
+--     smoothAngles = aerial.math.Lerp(ft * lerpSpeed, smoothAngles, desiredAngles)
+
+--     self.m_aCurrentRecoilPosition = smoothPos
+--     self.m_aCurrentRecoilAngles = smoothAngles
+
+--     matrix:Translate(smoothPos)
+--     matrix:Translate(muzzle.Pos)
+--     matrix:Rotate(smoothAngles)
+--     matrix:Translate(-muzzle.Pos)
+-- end
 
 function SWEP:VMDrawElement(index, elementData, vm, flags)
     local state = self._vmElements[index]

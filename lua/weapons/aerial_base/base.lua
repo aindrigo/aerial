@@ -132,6 +132,10 @@ function SWEP:Deploy()
     self:FireHook("Deploy")
     self:Reset()
 
+    if self.DeploySound then
+        self:EmitSound(self.DeploySound)
+    end
+
     self:PlayAnimation(self.DeployAnimation or ACT_VM_DRAW)
     self:QueueIdle()
 
