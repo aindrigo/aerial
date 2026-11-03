@@ -6,10 +6,9 @@ aerial.version = { 1, 0, 0 }
 aerial.color = Color(62, 178, 20)
 
 --- Includes a file
--- @string filePath File path
--- @string[opt] fileName File name, auto-detected if not provided
--- @realm shared
--- @internal
+--- @param filePath string
+--- @param fileName? string
+--- @private
 function aerial.include(filePath, fileName)
     if fileName == nil then
         local split = string.Explode("/", filePath)
@@ -30,8 +29,7 @@ function aerial.include(filePath, fileName)
 end
 
 --- Includes all file in a directory using aerial.include
--- @string dirPath The directory path
--- @realm shared
+--- @param dirPath string
 function aerial.includeDirectory(dirPath)
     for _, fileName in ipairs(file.Find(dirPath .. "/*.lua", "LUA")) do
         aerial.include(dirPath .. "/" .. fileName, fileName)
@@ -39,8 +37,7 @@ function aerial.includeDirectory(dirPath)
 end
 
 --- Prints only when `developer 1` is enabled
--- @string msg The message to print
--- @realm shared
+--- @param msg string
 function aerial.dprint(msg)
     local dev = GetConVar("developer")
     if dev:GetBool() then

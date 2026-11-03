@@ -2,7 +2,6 @@ aerial.render = aerial.render or {}
 
 
 --- Clears stencil data
--- @realm client
 function aerial.render.ClearStencil()
     render.SetStencilReferenceValue(0)
     render.SetStencilPassOperation(STENCIL_KEEP)
@@ -11,8 +10,7 @@ function aerial.render.ClearStencil()
 end
 
 --- Enables a mask that only allows objects to draw on top of a specified entity. You should run aerial.render.Unmask afterwards
--- @realm client
--- @entity entity Entity to permit drawing on top of
+--- @param entity Entity ent to permit drawing on top of
 function aerial.render.MaskEntity(entity)
     aerial.render.ClearStencil()
     render.SetStencilEnable(true)
@@ -29,7 +27,6 @@ function aerial.render.MaskEntity(entity)
 end
 
 --- Disables MaskEntity
--- @realm client
 function aerial.render.Unmask()
     render.SetStencilEnable(false)
 end

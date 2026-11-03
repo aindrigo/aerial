@@ -1,18 +1,16 @@
 aerial.math = aerial.math or {}
 
 --- Converts RPM to interval
--- @realm shared
--- @number rpm Rate per minute value
--- @treturn number Interval
+--- @param rpm number
+--- @return number Interval
 function aerial.math.RPM(rpm)
     return 60 / rpm
 end
 
 --- Interpolates a value between two points
--- @realm shared
--- @number frac Fraction, between 0 and 1
--- @any p1 Point 1
--- @any p2 Point 2
+--- @param frac number between 0 and 1
+--- @param p1 number Point 1
+--- @param p2 number Point 2
 function aerial.math.Lerp(frac, p1, p2)
     assert(type(p1) == type(p2), "type mismatch for p1 and p2")
     local minDist = 0.001
@@ -49,10 +47,9 @@ function aerial.math.Lerp(frac, p1, p2)
 end
 
 --- Rounds number to the nearest multiple of another number
--- @realm shared
--- @number x Number to round
--- @number y Multiple
--- @treturn number Result
+--- @param x number Number to round
+--- @param y number Multiple
+--- @return number
 function aerial.math.RoundToMultiple(x, y)
     if math.fmod(x, y) == 0 then return x end
 
@@ -61,9 +58,10 @@ end
 
 
 --- DeNANs a value, making it zero if NAN
--- @realm shared
--- @number x value
+--- @param x number|Vector|Angle
+--- @return number|Vector|Angle x or 0 if nan
 function aerial.math.DeNAN(x)
+    --- @diagnostic disable
     if isvector(x) then
         x.x = aerial.math.DeNAN(x.x)
         x.y = aerial.math.DeNAN(x.y)
@@ -75,6 +73,7 @@ function aerial.math.DeNAN(x)
         x.r = aerial.math.DeNAN(x.r)
         return x
     end
+    --- @diagnostic enable
 
     if x ~= x then return 0 end
     return x

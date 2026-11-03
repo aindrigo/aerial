@@ -21,12 +21,11 @@ surface.CreateFont("aerial48", {
     antialias = true
 })
 --- Draws a line. Similar to surface.DrawLine but with thickness
--- @realm client
--- @number xStart X start position
--- @number yStart X end position
--- @number xEnd Y start position
--- @number yEnd Y end position
--- @number[opt=1] thickness Thickness value
+--- @param xStart number
+--- @param yStart number
+--- @param xEnd number
+--- @param yEnd number
+--- @param thickness? number 1
 function aerial.ui.DrawLine(xStart, yStart, xEnd, yEnd, thickness)
     thickness = thickness or 1
 
