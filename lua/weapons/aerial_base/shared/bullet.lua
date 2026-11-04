@@ -101,7 +101,8 @@ function SWEP:AttackBulletPerform(id, attackData)
     attackData.DamageType = attackData.DamageType or data.DamageType or DMG_BULLET
     attackData.Traces = {}
 
-    attackData.Recoil = self:AttackCalculateRecoil(id, data, attackData)
+    -- attackData.Recoil = self:AttackCalculateRecoil(id, data, attackData)
+    attackData.Recoil = Vector(0, 0, 0)
 
     self:SetShot(self:GetShot() + 1)
     self:SetLastShootTime(CurTime()) -- HACK

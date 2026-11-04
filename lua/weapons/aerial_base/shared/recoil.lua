@@ -5,20 +5,16 @@ local y = math.ease.OutQuint(t) * 3
 y = y + math.cos(t * 8) * mx * 0.5
 ]]
 
--- function SWEP.Primary.Recoil:Function(t)
---     local spd = math.ease.OutQuart(t) * 2
---     local et = math.ease.OutQuad(t)
-
---     local x = math.Clamp(math.sin(t * 9 + spd) * et, -0.8, 0.8)
---     local y = math.ease.OutQuint(math.Clamp(t - 0.1, 0, 1)) * 3
-
---     y = y + et * math.cos(t * 30) * 0.1
-
---     return x, y
--- end
-
 function SWEP.Primary.Recoil:Function(t)
-    return util.SharedRandom("aerialrrx" .. tostring(t), -1, 1), util.SharedRandom("aerialrry" .. tostring(t), -1, 1)
+    local spd = math.ease.OutQuart(t) * 2
+    local et = math.ease.OutQuad(t)
+
+    local x = math.Clamp(math.sin(t * 9 + spd) * et, -0.8, 0.8)
+    local y = math.ease.OutQuint(math.Clamp(t - 0.1, 0, 1)) * 3
+
+    y = y + et * math.cos(t * 30) * 0.1
+
+    return x, y
 end
 
 SWEP.Secondary.Recoil.Function = SWEP.Primary.Recoil.Function
