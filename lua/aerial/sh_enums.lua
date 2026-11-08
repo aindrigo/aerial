@@ -8,6 +8,10 @@ aerial.enums.ATTACK_TYPE_PROJECTILE = 3
 aerial.enums.RELOAD_MODE_NORMAL = 0
 aerial.enums.RELOAD_MODE_BULLET_BY_BULLET = 1
 
+aerial.enums.CHARGE_STATE_NONE = 0
+aerial.enums.CHARGE_STATE_CHARGING = 1
+aerial.enums.CHARGE_STATE_DELAYING = 2
+
 aerial.enums.FIRE_MODE_SEMIAUTOMATIC = 0
 aerial.enums.FIRE_MODE_AUTOMATIC = 1
 

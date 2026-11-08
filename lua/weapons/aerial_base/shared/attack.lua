@@ -130,6 +130,15 @@ function SWEP:AttackHitEntity(id, attackData, traceResult)
     dmgInfo:SetDamagePosition(traceResult.HitPos)
     dmgInfo:SetDamageForce(traceResult.Normal * (data.Force or 1))
 
+    if istable(data.Charge) and data.Charge.Enabled ~= false then
+        if isnumber(data.Charge.ReferenceTime) then
+            local ref = data.Charge.ReferenceTime
+            local actual = math.min(attackData.Charge.End - attackData.Charge.Start, ref)
+
+            print(actual / ref)
+            dmgInfo:ScaleDamage(actual / ref)
+        end
+    end
 
     if istable(data.HitGroupMultipliers) then
         local mul = data.HitGroupMultipliers[hitGroup]

@@ -47,6 +47,7 @@ function SWEP:ThinkAttack(id, key)
         self:Attack(id)
     elseif self:GetCurrentAttackName() == id and not canAttack then
         self:AttackCancel(id)
+        self:SetChargeTime(0)
         self:SetCurrentAttackTime(0)
         self:SetCurrentAttackName("")
     end
@@ -81,6 +82,15 @@ function SWEP:ThinkIdle()
         self:SetIdleTime(0)
 
         local anim = self:FireHook("GetIdleAnimation")
+
+        local cur = self:GetCurrentAttackName()
+        if cur ~= "" then
+            local data = self:GetAttackTable(cur)
+            if istable(data.Charge) and data.Charge.Enabled ~= false then
+                anim = anim or data.Charge.IdleAnimation
+            end
+        end
+
         self:PlayAnimation(anim or self.IdleAnimation or ACT_VM_IDLE)
     end
 end
@@ -148,7 +158,33 @@ function SWEP:ThinkCurrentAttack()
     if istable(chargeData) and chargeData.Enabled ~= false then
         local chargeType = chargeData.Type or aerial.enums.CHARGE_TYPE_RELEASE
         if chargeType == aerial.enums.CHARGE_TYPE_RELEASE then
-            if ply:KeyDown(self:GetAttackKey(data)) and not (isnumber(chargeData.HoldTime) and (attackTime + chargeData.HoldTime) < ct) or attackTime == 0 then return end
+            local state = self:GetChargeState()
+            local down = ply:KeyDown(self:GetAttackKey(data))
+            if down and state == aerial.enums.CHARGE_STATE_NONE then
+                self:SetChargeState(aerial.enums.CHARGE_STATE_CHARGING)
+                return
+            elseif down and state == aerial.enums.CHARGE_STATE_CHARGING then return end
+
+            if isnumber(chargeData.FinishDelay) then
+                if state == aerial.enums.CHARGE_STATE_CHARGING then
+                    self:SetChargeState(aerial.enums.CHARGE_STATE_DELAYING)
+                    self:SetChargeTime(attackTime)
+                    self:SetCurrentAttackTime(ct + chargeData.FinishDelay)
+
+                    if isstring(chargeData.ReadyAnimation) then
+                        self:PlayAnimation(chargeData.ReadyAnimation)
+                        self:QueueIdle()
+                    end
+
+                    return
+                elseif state == aerial.enums.CHARGE_STATE_DELAYING and (ct <= attackTime or self:GetChargeTime() == 0) then
+                    return
+                else
+                    self:SetChargeState(aerial.enums.CHARGE_STATE_NONE)
+                    attackTime = self:GetChargeTime()
+                    self:SetChargeTime(0)
+                end
+            end
         elseif chargeType == aerial.enums.CHARGE_TYPE_HOLD then
             if attackTime > ct then return end
         end
@@ -161,7 +197,7 @@ function SWEP:ThinkCurrentAttack()
     local attackData = self:BuildAttackData(attackName)
     if istable(chargeData) and chargeData.Enabled ~= false then
         local data = {
-            Start = self:GetCurrentAttackTime(),
+            Start = attackTime,
             End = ct
         }
 

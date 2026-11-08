@@ -221,11 +221,13 @@ function SWEP:SetupDataTables()
     self:NetworkVar("Float", "ReloadEndTime")               -- Used for reload camera
     self:NetworkVar("Float", "FireModeTime")                -- Used to delay attacks/reload after setting firemode
     self:NetworkVar("Float", "CurrentAttackTime")           -- Used for delayed/automatic attacks
+    self:NetworkVar("Float", "ChargeTime")
     self:NetworkVar("Int", "PrimaryFireMode")               -- Firemode for primary
     self:NetworkVar("Int", "SecondaryFireMode")             -- Firemode for secondary
     self:NetworkVar("Int", "CustomRecoilMode")              -- Recoil mode, see aerial.enums.CUSTOM_RECOIL_MODE
     self:NetworkVar("Int", "Shot")
     self:NetworkVar("Int", "BurstFireCount")
+    self:NetworkVar("Int", "ChargeState")
     self:NetworkVar("String", "ReloadName")                 -- Name for attack table when finishing reload
     self:NetworkVar("String", "LastAttackName")             -- Used for reloading, changing firemode, etc
     self:NetworkVar("String", "CurrentAttackName")          -- See CurrentAttackTime

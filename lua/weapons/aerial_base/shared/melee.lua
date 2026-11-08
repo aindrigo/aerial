@@ -25,6 +25,8 @@ function SWEP:AttackMeleePerform(id, attackData)
     else
         self:SetCurrentAttackName("")
         self:SetCurrentAttackTime(0)
+
+        self:SetNextAttack(id, ct + data.Delay)
     end
 
     ply:LagCompensation(true)
@@ -96,7 +98,9 @@ function SWEP:AttackMeleePreEffects(id)
 
     if data.StartAnimation ~= false then
         self:PlayAnimation(data.StartAnimation or ACT_VM_MISSCENTER)
-        self:QueueIdle()
+        if istable(data.Charge) and data.Charge.IdleAnimation ~= false then
+            self:QueueIdle()
+        end
     end
 end
 
@@ -125,5 +129,14 @@ function SWEP:AttackMeleeEffects(id, attackData)
 
     if isstring(data.ImpactSound) and (data.ImpactSoundWorldOnly and hitWorld or not data.ImpactSoundWorldOnly) then
         self:EmitSound(data.ImpactSound)
+    end
+
+    if isstring(data.Sound) then
+        self:EmitSound(data.Sound)
+    end
+
+    if isstring(data.Animation) then
+        self:PlayAnimation(data.Animation)
+        self:QueueIdle()
     end
 end
