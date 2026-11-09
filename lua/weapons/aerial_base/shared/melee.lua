@@ -109,11 +109,16 @@ function SWEP:AttackMeleeEffects(id, attackData)
 
     local data = self:GetAttackTable(id)
     local hitWorld = false
+    local hitAny = false
 
     for _, traceResult in ipairs(attackData.Traces) do
         if not traceResult.Hit or not (game.SinglePlayer() or IsFirstTimePredicted()) then continue end
         if traceResult.HitWorld and not hitWorld then
             hitWorld = true
+        end
+
+        if traceResult.Hit then
+            hitAny = true
         end
 
         local impactEffect = EffectData()
@@ -127,7 +132,7 @@ function SWEP:AttackMeleeEffects(id, attackData)
         util.Effect("Impact", impactEffect, true, false)
     end
 
-    if isstring(data.ImpactSound) and (data.ImpactSoundWorldOnly and hitWorld or not data.ImpactSoundWorldOnly) then
+    if isstring(data.ImpactSound) and (data.ImpactSoundWorldOnly and hitWorld or not data.ImpactSoundWorldOnly and hitAny) then
         self:EmitSound(data.ImpactSound)
     end
 
