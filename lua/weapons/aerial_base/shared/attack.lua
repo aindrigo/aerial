@@ -135,7 +135,6 @@ function SWEP:AttackHitEntity(id, attackData, traceResult)
             local ref = data.Charge.ReferenceTime
             local actual = math.min(attackData.Charge.End - attackData.Charge.Start, ref)
 
-            print(actual / ref)
             dmgInfo:ScaleDamage(actual / ref)
         end
     end
