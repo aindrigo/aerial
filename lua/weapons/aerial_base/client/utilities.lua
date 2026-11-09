@@ -38,6 +38,7 @@ function SWEP:FindMuzzleAttachment()
         muzzleAttachment.Bone = 0
 
         aerial.dprint("Warning: muzzle attachment " .. muzzleAttachmentName .. " not found")
+        dummy:Remove()
         return muzzleAttachment
     end
 
