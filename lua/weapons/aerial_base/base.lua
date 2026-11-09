@@ -91,6 +91,8 @@ function SWEP:Reset()
     self:SetReloadName("")
     self:SetCurrentAttackTime(0)
     self:SetCurrentAttackName("")
+    self:SetChargeTime(0)
+    self:SetChargeState(0)
     self:SetBurstFireCount(0)
 
     self:SetPrimaryFireMode(1)
